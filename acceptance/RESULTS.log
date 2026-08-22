@@ -1,0 +1,280 @@
+=== Core-v1 Phase 0-1 acceptance run ===
+date: 2026-08-22T14:24:28Z
+node: v24.14.1
+
+--- [1] frozen handoff checksum re-verification (must stay 8/8, untouched) ---
+00-verified-host-facts.md: OK
+01-plugin-development-plan.md: OK
+02-mcp-tool-plan.md: OK
+03-hooks-privacy-surge-plan.md: OK
+04-development-readiness-review.md: OK
+05-development-start-checklist.md: OK
+README.md: OK
+validation/spec-invariants.cjs: OK
+
+--- [2] frozen spec-invariants re-run (read-only) ---
+OK
+
+--- [3] full test suite: npm test ---
+
+> cdn-node-operator-core-v1@0.1.0-phase1 test
+> node --test tests/*.test.cjs
+
+✔ complete audit journey: begin -> inventories -> completion -> close (1120.652958ms)
+✔ audit cannot reach any tool outside the frozen audit allowlist (16.811667ms)
+✔ audit run_begin structurally cannot request BBR (4.666583ms)
+✔ audit output is masked: no observation leaks beyond schema-bound fields (42.484ms)
+✔ unregistered onboarding refs are rejected at run_begin (4.633125ms)
+✔ configure minimal closed loop: plan -> lease -> cursor -> owned mutation (1154.83325ms)
+✔ challenge replay and impact-digest drift are rejected (9.151791ms)
+✔ zero-commit lease expiry revokes old authority and returns to INVENTORIED (8.375416ms)
+✔ BBR branch minimal loop: pending -> inventoried -> closed receipt gates main close (11.512667ms)
+✔ configure completion stays honestly pending in this build (9.756833ms)
+✔ frozen spec digest matches the external lock record (0.817875ms)
+✔ vendored contract modules are byte-equal to a fresh re-extraction (1.59925ms)
+✔ tools/list equals the frozen ordered 31-tool catalog (37.360625ms)
+✔ plugin manifest and single-server .mcp.json load and agree (0.409667ms)
+✔ unknown field, null, bad enum, and broken conditional are rejected pre-handler (1080.88025ms)
+✔ valid input reaches the handler exactly once (8.027667ms)
+✔ ledger opens in WAL journal mode (5.016375ms)
+✔ transactions are atomic: a throwing transaction leaves no partial writes (6.724875ms)
+✔ idempotency: exact replay is no_op with the original binding; drifted input conflicts (1106.412083ms)
+✔ recovery: reopening the same data dir preserves runs, chain digests, and evidence (4.93375ms)
+✔ phase writes extend the hash chain deterministically (4.926125ms)
+✔ evidence TTL: stale evidence stops satisfying completion (21.921375ms)
+✔ expected_ledger_digest drift is rejected as BASELINE_DRIFT (6.138667ms)
+✔ install -> update -> explicit rollback -> uninstall lifecycle (10.631958ms)
+✔ interrupted update staging residue is recovered (6.815625ms)
+✔ doctor passes on a fresh install in a temp runtime root (1135.673375ms)
+✔ stdio server loads the single cdn-node config and serves the frozen catalog (652.856125ms)
+✔ all 93 schemas compile under strict Ajv 2020-12 (2.0895ms)
+✔ run_begin: positive input/data/output instances validate (2.789583ms)
+✔ run_begin: unknown fields are rejected on every closed object (0.19825ms)
+✔ run_begin: null in a non-nullable required field is rejected (0.124834ms)
+✔ run_begin: out-of-enum values are rejected (0.118917ms)
+✔ run_begin: output error conditional (error implies null data) (0.06625ms)
+✔ run_status: positive input/data/output instances validate (2.284334ms)
+✔ run_status: unknown fields are rejected on every closed object (0.075208ms)
+✔ run_status: null in a non-nullable required field is rejected (0.078458ms)
+✔ run_status: out-of-enum values are rejected (0.087875ms)
+✔ run_status: output error conditional (error implies null data) (0.05025ms)
+✔ reconcile_status: positive input/data/output instances validate (19.750375ms)
+✔ reconcile_status: unknown fields are rejected on every closed object (0.265375ms)
+✔ reconcile_status: null in a non-nullable required field is rejected (0.052792ms)
+✔ reconcile_status: out-of-enum values are rejected (0.168833ms)
+✔ reconcile_status: output error conditional (error implies null data) (0.145583ms)
+✔ plan_compile: positive input/data/output instances validate (3.656625ms)
+✔ plan_compile: unknown fields are rejected on every closed object (0.256917ms)
+✔ plan_compile: null in a non-nullable required field is rejected (0.067375ms)
+✔ plan_compile: out-of-enum values are rejected (0.141458ms)
+✔ plan_compile: output error conditional (error implies null data) (0.112042ms)
+✔ plan_authorize: positive input/data/output instances validate (2.380292ms)
+✔ plan_authorize: unknown fields are rejected on every closed object (0.119583ms)
+✔ plan_authorize: null in a non-nullable required field is rejected (0.034916ms)
+✔ plan_authorize: out-of-enum values are rejected (0.044292ms)
+✔ plan_authorize: output error conditional (error implies null data) (0.030042ms)
+✔ evidence_list: positive input/data/output instances validate (57.814917ms)
+✔ evidence_list: unknown fields are rejected on every closed object (0.186166ms)
+✔ evidence_list: null in a non-nullable required field is rejected (0.030625ms)
+✔ evidence_list: out-of-enum values are rejected (0.097417ms)
+✔ evidence_list: output error conditional (error implies null data) (0.083583ms)
+✔ completion_evaluate: positive input/data/output instances validate (2.175917ms)
+✔ completion_evaluate: unknown fields are rejected on every closed object (0.071667ms)
+✔ completion_evaluate: null in a non-nullable required field is rejected (0.020584ms)
+✔ completion_evaluate: out-of-enum values are rejected (0.045333ms)
+✔ completion_evaluate: output error conditional (error implies null data) (0.054083ms)
+✔ run_close: positive input/data/output instances validate (1.794042ms)
+✔ run_close: unknown fields are rejected on every closed object (0.099917ms)
+✔ run_close: null in a non-nullable required field is rejected (0.030792ms)
+✔ run_close: out-of-enum values are rejected (0.056459ms)
+✔ run_close: output error conditional (error implies null data) (0.042875ms)
+✔ rollback_run: positive input/data/output instances validate (2.869334ms)
+✔ rollback_run: unknown fields are rejected on every closed object (0.150875ms)
+✔ rollback_run: null in a non-nullable required field is rejected (0.039916ms)
+✔ rollback_run: out-of-enum values are rejected (0.071458ms)
+✔ rollback_run: output error conditional (error implies null data) (0.062959ms)
+✔ origin_inventory: positive input/data/output instances validate (3.776167ms)
+✔ origin_inventory: unknown fields are rejected on every closed object (0.341625ms)
+✔ origin_inventory: null in a non-nullable required field is rejected (0.233125ms)
+✔ origin_inventory: out-of-enum values are rejected (0.405875ms)
+✔ origin_inventory: output error conditional (error implies null data) (0.122833ms)
+✔ cloudflare_inventory: positive input/data/output instances validate (3.3815ms)
+✔ cloudflare_inventory: unknown fields are rejected on every closed object (0.106417ms)
+✔ cloudflare_inventory: null in a non-nullable required field is rejected (0.023875ms)
+✔ cloudflare_inventory: out-of-enum values are rejected (0.054291ms)
+✔ cloudflare_inventory: output error conditional (error implies null data) (0.048375ms)
+✔ xui_inventory: positive input/data/output instances validate (6.422791ms)
+✔ xui_inventory: unknown fields are rejected on every closed object (0.118084ms)
+✔ xui_inventory: null in a non-nullable required field is rejected (0.022792ms)
+✔ xui_inventory: out-of-enum values are rejected (0.049709ms)
+✔ xui_inventory: output error conditional (error implies null data) (0.042459ms)
+✔ client_inventory: positive input/data/output instances validate (1.192292ms)
+✔ client_inventory: unknown fields are rejected on every closed object (0.058208ms)
+✔ client_inventory: null in a non-nullable required field is rejected (0.0425ms)
+✔ client_inventory: out-of-enum values are rejected (0.029959ms)
+✔ client_inventory: output error conditional (error implies null data) (0.056083ms)
+✔ old_line_verify: positive input/data/output instances validate (1.626458ms)
+✔ old_line_verify: unknown fields are rejected on every closed object (0.080792ms)
+✔ old_line_verify: null in a non-nullable required field is rejected (0.036166ms)
+✔ old_line_verify: out-of-enum values are rejected (0.051959ms)
+✔ old_line_verify: output error conditional (error implies null data) (0.0425ms)
+✔ xui_install: positive input/data/output instances validate (1.70325ms)
+✔ xui_install: unknown fields are rejected on every closed object (0.083167ms)
+✔ xui_install: null in a non-nullable required field is rejected (0.061542ms)
+✔ xui_install: out-of-enum values are rejected (0.041791ms)
+✔ xui_install: output error conditional (error implies null data) (0.037ms)
+✔ xui_create_inbound: positive input/data/output instances validate (2.254667ms)
+✔ xui_create_inbound: unknown fields are rejected on every closed object (0.086292ms)
+✔ xui_create_inbound: null in a non-nullable required field is rejected (0.024667ms)
+✔ xui_create_inbound: out-of-enum values are rejected (0.0435ms)
+✔ xui_create_inbound: output error conditional (error implies null data) (0.036333ms)
+✔ xui_profile_publish: positive input/data/output instances validate (1.537ms)
+✔ xui_profile_publish: unknown fields are rejected on every closed object (0.080333ms)
+✔ xui_profile_publish: null in a non-nullable required field is rejected (0.026708ms)
+✔ xui_profile_publish: out-of-enum values are rejected (0.045292ms)
+✔ xui_profile_publish: output error conditional (error implies null data) (0.058166ms)
+✔ xui_profile_inspect: positive input/data/output instances validate (1.0545ms)
+✔ xui_profile_inspect: unknown fields are rejected on every closed object (0.076791ms)
+✔ xui_profile_inspect: null in a non-nullable required field is rejected (0.030333ms)
+✔ xui_profile_inspect: out-of-enum values are rejected (0.035875ms)
+✔ xui_profile_inspect: output error conditional (error implies null data) (0.03ms)
+✔ certificate_issue_origin_ca: positive input/data/output instances validate (1.480416ms)
+✔ certificate_issue_origin_ca: unknown fields are rejected on every closed object (0.087333ms)
+✔ certificate_issue_origin_ca: null in a non-nullable required field is rejected (0.024333ms)
+✔ certificate_issue_origin_ca: out-of-enum values are rejected (0.041166ms)
+✔ certificate_issue_origin_ca: output error conditional (error implies null data) (0.035583ms)
+✔ certificate_deploy: positive input/data/output instances validate (1.864583ms)
+✔ certificate_deploy: unknown fields are rejected on every closed object (0.090417ms)
+✔ certificate_deploy: null in a non-nullable required field is rejected (0.0255ms)
+✔ certificate_deploy: out-of-enum values are rejected (0.044583ms)
+✔ certificate_deploy: output error conditional (error implies null data) (0.035958ms)
+✔ nginx_route_apply: positive input/data/output instances validate (1.962583ms)
+✔ nginx_route_apply: unknown fields are rejected on every closed object (0.102708ms)
+✔ nginx_route_apply: null in a non-nullable required field is rejected (0.028709ms)
+✔ nginx_route_apply: out-of-enum values are rejected (0.054042ms)
+✔ nginx_route_apply: output error conditional (error implies null data) (0.044958ms)
+✔ origin_verify: positive input/data/output instances validate (0.77575ms)
+✔ origin_verify: unknown fields are rejected on every closed object (0.052625ms)
+✔ origin_verify: null in a non-nullable required field is rejected (0.021ms)
+✔ origin_verify: out-of-enum values are rejected (0.026458ms)
+✔ origin_verify: output error conditional (error implies null data) (0.022459ms)
+✔ cf_node_record_apply: positive input/data/output instances validate (1.42975ms)
+✔ cf_node_record_apply: unknown fields are rejected on every closed object (0.221666ms)
+✔ cf_node_record_apply: null in a non-nullable required field is rejected (0.061167ms)
+✔ cf_node_record_apply: out-of-enum values are rejected (0.108917ms)
+✔ cf_node_record_apply: output error conditional (error implies null data) (0.07825ms)
+✔ cf_proxy_enable: positive input/data/output instances validate (2.097333ms)
+✔ cf_proxy_enable: unknown fields are rejected on every closed object (0.07175ms)
+✔ cf_proxy_enable: null in a non-nullable required field is rejected (0.029916ms)
+✔ cf_proxy_enable: out-of-enum values are rejected (0.034083ms)
+✔ cf_proxy_enable: output error conditional (error implies null data) (0.027875ms)
+✔ cdn_verify: positive input/data/output instances validate (1.568541ms)
+✔ cdn_verify: unknown fields are rejected on every closed object (0.069458ms)
+✔ cdn_verify: null in a non-nullable required field is rejected (0.025708ms)
+✔ cdn_verify: out-of-enum values are rejected (0.035375ms)
+✔ cdn_verify: output error conditional (error implies null data) (0.029333ms)
+✔ traffic_verify: positive input/data/output instances validate (1.286666ms)
+✔ traffic_verify: unknown fields are rejected on every closed object (0.048209ms)
+✔ traffic_verify: null in a non-nullable required field is rejected (0.01875ms)
+✔ traffic_verify: out-of-enum values are rejected (0.029875ms)
+✔ traffic_verify: output error conditional (error implies null data) (0.025834ms)
+✔ logs_correlate: positive input/data/output instances validate (1.080209ms)
+✔ logs_correlate: unknown fields are rejected on every closed object (0.058042ms)
+✔ logs_correlate: null in a non-nullable required field is rejected (0.027417ms)
+✔ logs_correlate: out-of-enum values are rejected (0.03325ms)
+✔ logs_correlate: output error conditional (error implies null data) (0.02375ms)
+✔ bbr_inventory: positive input/data/output instances validate (0.993541ms)
+✔ bbr_inventory: unknown fields are rejected on every closed object (0.051167ms)
+✔ bbr_inventory: null in a non-nullable required field is rejected (0.019625ms)
+✔ bbr_inventory: out-of-enum values are rejected (0.030625ms)
+✔ bbr_inventory: output error conditional (error implies null data) (0.027334ms)
+✔ bbr_apply: positive input/data/output instances validate (1.699125ms)
+✔ bbr_apply: unknown fields are rejected on every closed object (0.077958ms)
+✔ bbr_apply: null in a non-nullable required field is rejected (0.021542ms)
+✔ bbr_apply: out-of-enum values are rejected (0.052833ms)
+✔ bbr_apply: output error conditional (error implies null data) (0.051417ms)
+✔ bbr_verify: positive input/data/output instances validate (2.131958ms)
+✔ bbr_verify: unknown fields are rejected on every closed object (0.062666ms)
+✔ bbr_verify: null in a non-nullable required field is rejected (0.020042ms)
+✔ bbr_verify: out-of-enum values are rejected (0.028625ms)
+✔ bbr_verify: output error conditional (error implies null data) (0.026125ms)
+✔ bbr_rollback: positive input/data/output instances validate (1.370458ms)
+✔ bbr_rollback: unknown fields are rejected on every closed object (0.0585ms)
+✔ bbr_rollback: null in a non-nullable required field is rejected (0.019875ms)
+✔ bbr_rollback: out-of-enum values are rejected (0.037875ms)
+✔ bbr_rollback: output error conditional (error implies null data) (0.031667ms)
+✔ run_begin conditional: audit mode cannot request BBR (0.056542ms)
+✔ run_begin conditional: protected-line pair must be both-null or both-set (0.046416ms)
+✔ run_close data conditional: audit_complete close binds the report (0.085583ms)
+✔ completion_evaluate data conditional: labels bind status and report shape (0.137875ms)
+✔ old_line_verify data conditional: pre_change forbids route/receipt bindings (0.05325ms)
+✔ xui_inventory data conditional: case projection is enforced (0.061959ms)
+✔ production import registry is closed: builtins, ajv, and relative modules only (2.878959ms)
+✔ no shell, spawn, eval, dynamic import, or network surface in production code (4.538375ms)
+✔ no plaintext secret, private-key container, or credential material in durable bytes (3.382583ms)
+✔ no real deployment value: public IPs, real-looking hostnames, or home paths (5.269209ms)
+✔ no active Future-v2 entry point in production or config bytes (5.557292ms)
+✔ dependency set is exactly ajv (0.416625ms)
+✔ mutating adapter operations are exactly the contract's closed set (10.907083ms)
+ℹ tests 196
+ℹ suites 0
+ℹ pass 196
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1864.902542
+
+--- [4] contract parity verify (re-extraction byte-compare) ---
+{
+  "ok": true,
+  "results": [
+    {
+      "file": "shared/schema-primitives.cjs",
+      "byteEqual": true,
+      "sha256": "d19d537d5b338086f5f14367b0b64740d656db8a473588d29a804f221d8abfae"
+    },
+    {
+      "file": "mcp/schemas/contracts.cjs",
+      "byteEqual": true,
+      "sha256": "b5c807ec0e6ec28020567201258e28adba0d9fa32203e5cde10e9ad4d4aef5c6"
+    }
+  ]
+}
+
+--- [5] doctor on a fresh temp runtime root ---
+{
+  "ok": true,
+  "checks": [
+    {
+      "name": "node-identity",
+      "ok": true,
+      "detail": "node 24.14.1"
+    },
+    {
+      "name": "contract-bytes",
+      "ok": true,
+      "detail": "2 vendored contract files match provenance"
+    },
+    {
+      "name": "catalog-parity",
+      "ok": true,
+      "detail": "served catalog equals the frozen 31-tool contract order"
+    },
+    {
+      "name": "schema-compile",
+      "ok": true,
+      "detail": "93 schemas compile under strict Ajv 2020-12"
+    },
+    {
+      "name": "active-set",
+      "ok": true,
+      "detail": "version 0.1.0-phase1 with layout receipt"
+    },
+    {
+      "name": "ledger-wal",
+      "ok": true,
+      "detail": "ledger opens in WAL journal mode"
+    }
+  ]
+}

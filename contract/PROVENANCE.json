@@ -1,0 +1,15 @@
+{
+  "source": "02-mcp-tool-plan.md",
+  "source_sha256": "a4bf469b9f5ccd61a03b73b7b61cfb8a962de280e107afe56442a43a0c542ea0",
+  "extraction": "fenced js blocks declared with // FILE:, byte-exact",
+  "files": [
+    {
+      "file": "shared/schema-primitives.cjs",
+      "sha256": "d19d537d5b338086f5f14367b0b64740d656db8a473588d29a804f221d8abfae"
+    },
+    {
+      "file": "mcp/schemas/contracts.cjs",
+      "sha256": "b5c807ec0e6ec28020567201258e28adba0d9fa32203e5cde10e9ad4d4aef5c6"
+    }
+  ]
+}

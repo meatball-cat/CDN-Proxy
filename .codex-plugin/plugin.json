@@ -1,0 +1,36 @@
+{
+  "name": "cdn-node-operator",
+  "version": "0.1.0-phase1",
+  "displayName": "3x-ui CDN Operator (Core v1)",
+  "description": "Bounded operator for auditing or configuring one registered Linux origin as one Cloudflare-fronted 3x-ui/Xray WebSocket node. One local stdio MCP server (cdn-node), closed 31-Tool catalog frozen by the Core-v1 contract. Phase 0-1 build: contract, ledger, and audit journey only; no external mutation adapter is active.",
+  "engines": {
+    "codex": "*",
+    "node": ">=24.0.0"
+  },
+  "mcp": {
+    "configPath": "../.mcp.json"
+  },
+  "skills": [
+    {
+      "name": "cdn-node-operator",
+      "path": "../skills/cdn-node-operator/SKILL.md"
+    }
+  ],
+  "hooks": {
+    "configPath": "../hooks/hooks.json"
+  },
+  "lifecycle": {
+    "install": "../lifecycle/install.cjs",
+    "doctor": "../lifecycle/doctor.cjs",
+    "verify": "../lifecycle/verify.cjs",
+    "update": "../lifecycle/update.cjs",
+    "rollback": "../lifecycle/rollback.cjs",
+    "uninstall": "../lifecycle/uninstall.cjs"
+  },
+  "status": {
+    "phase": "PHASE_0_1_ONLY",
+    "installable": "NOT_CLAIMED",
+    "runnable": "NOT_CLAIMED",
+    "accepted": "NOT_CLAIMED"
+  }
+}

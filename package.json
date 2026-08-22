@@ -1,0 +1,18 @@
+{
+  "name": "cdn-node-operator-core-v1",
+  "version": "0.1.0-phase1",
+  "private": true,
+  "description": "3x-ui CDN Operator Core-v1 - Codex-only plugin with one local stdio MCP server (cdn-node). Phases 0-1 only. Not INSTALLABLE, not RUNNABLE against real infrastructure, not ACCEPTED.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "extract-contract": "node scripts/extract-contract.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "doctor": "node lifecycle/doctor.cjs"
+  },
+  "dependencies": {
+    "ajv": "8.20.0"
+  }
+}

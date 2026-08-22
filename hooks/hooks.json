@@ -1,0 +1,4 @@
+{
+  "comment": "Core Hooks are Phase 5 scope (handoff document 03). No hook handler is active in the Phase 0-1 build. This file exists only so default hook discovery finds a well-formed empty set; it grants no authority and registers no deferred workflow.",
+  "hooks": []
+}

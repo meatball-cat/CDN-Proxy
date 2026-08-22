@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "cdn-node": {
+      "command": "node",
+      "args": ["mcp/server.cjs"],
+      "type": "stdio"
+    }
+  }
+}
