@@ -24,6 +24,25 @@ The suite and lifecycle checks use fake adapters and explicit temporary runtime
 roots. Passing them is not evidence of clean-machine installation, real
 authenticated staging traffic, or real-infrastructure operation.
 
+## Read this first — GitHub release boundary
+
+This repository is published as a **reviewable, reproducible source release
+candidate**, not as a ready-to-connect production operator. It is useful for
+reviewing the closed MCP contract, running the hermetic test suite, inspecting
+the package surface, and continuing approved adapter or staging work.
+
+| This release provides | This release does not provide |
+|---|---|
+| Phase 0–6 source, tests, Core Hooks, lifecycle guards, and a reproducible npm package | Access to a real server, Cloudflare account, DNS zone, 3x-ui panel, Nginx, or Keychain |
+| 348 hermetic source tests and isolated Codex loader validation | Evidence of a clean-machine end-user installation |
+| Production adapters that are deliberately phase-gated and fail closed | Permission to dispatch a real mutation or proof that one has succeeded |
+| Source-package security checks and a dependency audit | Real staging/E2E evidence or production acceptance |
+
+Publishing or cloning this repository does not change these boundaries. A
+future real-environment phase must be explicitly authorized and must prove
+authenticated traffic, expected egress, correlated logs, protected old-line
+health, and any required rollback behavior.
+
 ## Contract authority
 
 The frozen handoff document `02-mcp-tool-plan.md`
@@ -117,3 +136,8 @@ node lifecycle/doctor.cjs
 ```
 
 Requires Node.js >= 24 (uses the built-in `node:sqlite` and `node:test`).
+
+For a release-candidate recheck, run `npm run acceptance`. It reruns the full
+suite, verifies the frozen handoff package before and after the run, checks the
+vendored contract bytes, and runs `doctor` against a temporary runtime root.
+All of those checks remain local and hermetic.
