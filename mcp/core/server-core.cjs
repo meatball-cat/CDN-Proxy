@@ -8,6 +8,7 @@ const { Dispatcher } = require("./dispatch.cjs");
 
 const PROTOCOL_VERSION = "2025-06-18";
 const SERVER_NAME = "cdn-node";
+const SERVER_VERSION = require("../../package.json").version;
 
 function toolCatalog() {
   return contracts.TOOL_LIST.map((tool) => ({
@@ -31,7 +32,7 @@ class ServerCore {
         return {
           protocolVersion: PROTOCOL_VERSION,
           capabilities: { tools: {} },
-          serverInfo: { name: SERVER_NAME, version: "0.1.0-phase1" },
+          serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
         };
       case "ping":
         return {};
@@ -51,4 +52,4 @@ class ServerCore {
   }
 }
 
-module.exports = { ServerCore, SERVER_NAME, PROTOCOL_VERSION, toolCatalog };
+module.exports = { ServerCore, SERVER_NAME, SERVER_VERSION, PROTOCOL_VERSION, toolCatalog };

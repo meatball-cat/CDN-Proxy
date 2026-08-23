@@ -1,10 +1,8 @@
 "use strict";
 
 // Acceptance: the user-visible phase labels cannot diverge again. The
-// package version suffix is the single declaration of the implemented phase
-// range; the plugin manifest, the Skill, and the README must all name that
-// same range, and none of them may upgrade a source-only build into a claim
-// about real infrastructure.
+// The parsed package, lock root, parsed manifest, actual MCP initialize
+// response, Skill, and README must all agree on the source-candidate phase.
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
@@ -19,6 +17,7 @@ const PACKAGE_TEXT = readText("package.json");
 const MANIFEST_TEXT = readText(".codex-plugin", "plugin.json");
 const SKILL_TEXT = readText("skills", "cdn-node-operator", "SKILL.md");
 const README_TEXT = readText("README.md");
+const lock = JSON.parse(readText("package-lock.json"));
 
 const pkg = JSON.parse(PACKAGE_TEXT);
 const manifest = JSON.parse(MANIFEST_TEXT);
@@ -30,11 +29,13 @@ function declaredRanges(text) {
   return [...text.matchAll(PHASE_RANGE)].map((match) => Number(match[1]));
 }
 
-test("the package version suffix declares the implemented phase range", () => {
+test("phase metadata guard: package, lock root, and manifest declare Phase 0-6", () => {
   const parsed = /^\d+\.\d+\.\d+-phase(\d+)$/.exec(pkg.version);
   assert.ok(parsed, `package version must end in -phase<N>, found ${pkg.version}`);
+  assert.equal(Number(parsed[1]), 6, "Phase 6 source candidate must carry -phase6");
   assert.equal(manifest.version, pkg.version);
-  assert.equal(manifest.status.phase, `PHASE_0_${parsed[1]}_ONLY`);
+  assert.equal(lock.version, pkg.version);
+  assert.equal(lock.packages[""].version, pkg.version);
 });
 
 test("manifest, Skill, README, and package all name the same phase range", () => {
@@ -55,11 +56,21 @@ test("manifest, Skill, README, and package all name the same phase range", () =>
   }
 });
 
+test("initialize version guard: actual ServerCore.initialize matches the package", () => {
+  const { ServerCore } = require("../mcp/core/server-core.cjs");
+  const response = new ServerCore({}).handle("initialize", {
+    protocolVersion: "2025-06-18",
+    capabilities: {},
+    clientInfo: { name: "metadata-test", version: "0" },
+  });
+  assert.equal(response.serverInfo.name, "cdn-node");
+  assert.equal(response.serverInfo.version, pkg.version,
+    "initialize version guard: serverInfo.version must equal package.json");
+});
+
 test("the three honest-scope claims stay unclaimed everywhere they appear", () => {
-  assert.equal(manifest.status.installable, "NOT_CLAIMED");
-  assert.equal(manifest.status.runnable, "NOT_CLAIMED");
-  assert.equal(manifest.status.accepted, "NOT_CLAIMED");
   for (const [name, text] of Object.entries({
+    ".codex-plugin/plugin.json": MANIFEST_TEXT,
     "skills/cdn-node-operator/SKILL.md": SKILL_TEXT,
     "README.md": README_TEXT,
   })) {
@@ -71,7 +82,7 @@ test("the three honest-scope claims stay unclaimed everywhere they appear", () =
   }
 });
 
-test("the Skill scopes Phase 0-4 to source and hermetic fake adapters", () => {
+test("the Skill scopes Phase 0-6 to source and hermetic fake adapters", () => {
   // Markdown wraps these phrases across lines, so match across whitespace.
   assert.match(SKILL_TEXT, /hermetic\s+fake\s+adapters/i);
   assert.match(SKILL_TEXT, /not\s+a\s+real\s+run/i);

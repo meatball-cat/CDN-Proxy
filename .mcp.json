@@ -2,7 +2,8 @@
   "mcpServers": {
     "cdn-node": {
       "command": "node",
-      "args": ["mcp/server.cjs"],
+      "args": ["./mcp/server.cjs"],
+      "cwd": ".",
       "type": "stdio"
     }
   }

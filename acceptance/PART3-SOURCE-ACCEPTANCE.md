@@ -45,14 +45,14 @@ from an unrelated full-suite result.
 | P5-HOOK-12 | `03` §§3, 8–9 | Hook suite plus ledger/runtime snapshots | Hook calls leave ActiveSet, ledger, approvals, leases, receipts, and server state unchanged | mutation snapshot comparison | PASS — ActiveSet, version tree, and product data snapshots unchanged |
 | P5-HOOK-13 | `01` Phase 5; `02` §§8, 11 | Hook fixed status output; README/Skill/manifest status | source/hermetic result stays distinct from real E2E | phase/status mutation | PASS — `HOOK_READY_HERMETIC_SOURCE_ONLY`; real E2E remains explicitly unexecuted |
 | P5-E2E-REAL | `01` Phase 5 exit; `05` §§2.7, 4 | none in this round | none authorized | none authorized | NOT_EXECUTED — real authenticated staging traffic is outside this round |
-| P6-PKG-01 | `01` §§11, Phase 6; `05` §§2.1, 3 | plugin manifest, `.mcp.json`, Skill, hooks, lifecycle, README, package allowlist | source package layout and plugin manifest validation | missing/extra/deferred package entry | NOT_EXECUTED |
-| P6-META-01 | `01` Phase 6; user Part 3 §3 | manifest, `package.json`, lockfile, Skill, README, MCP initialize | all actual parsed/returned versions and phase labels agree | `manifest-phase`; `lock-or-server-version` | NOT_EXECUTED |
-| P6-MCP-01 | `02` §§0, 3 | `.mcp.json`; `mcp/core/server-core.cjs`; `mcp/server.cjs` | real stdio initialize and tools/list: one server, exact name/version/31 order | `mcp-catalog-parity` | NOT_EXECUTED |
-| P6-LIFE-01 | `01` §§9, 11, Phase 6; `05` §§2.1, 3 | `runtime/`; `lifecycle/` | temp-root install, doctor, update, explicit rollback, uninstall, restart/recovery | `lifecycle-isolation` | NOT_EXECUTED |
-| P6-LIFE-02 | `03` §§4, 8–9 | `lifecycle/`; Hook trust receipt | update/uninstall preserve ledger, artifacts, Hook evidence, and foreign data | deletion/no-clobber cases | NOT_EXECUTED |
-| P6-SEC-01 | `01` §§7, 11, 13; `02` §§11–12; `05` §§3, 5 | package scanner and package allowlist | generated tarball entries, types, modes, imports, values, credentials, and Future-v2 scan | `package-security` | NOT_EXECUTED |
-| P6-SBOM-01 | `05` §3 | generated SBOM/equivalent dependency manifest | lockfile closure, license list, declared dependency parity | undeclared dependency mutation | NOT_EXECUTED |
-| P6-LOADER-01 | `01` Phase 6; `05` §3 | isolated local marketplace fixture and generated package | host-supported non-interactive loader check under temporary Codex home | malformed manifest/package rejection | NOT_EXECUTED |
+| P6-PKG-01 | `01` §§11, Phase 6; `05` §§2.1, 3 | plugin manifest, `.mcp.json`, Skill, hooks, lifecycle, README, package allowlist | source package layout and plugin manifest validation | missing/extra/deferred package entry | PASS — official plugin validator and npm package layout checks passed |
+| P6-META-01 | `01` Phase 6; user Part 3 §3 | manifest, `package.json`, lockfile, Skill, README, MCP initialize | all actual parsed/returned versions and phase labels agree | `manifest-phase`; `lock-or-server-version` | PASS — parsed metadata and actual initialize all equal `0.3.0-phase6` / Phase 0-6 |
+| P6-MCP-01 | `02` §§0, 3 | `.mcp.json`; `mcp/core/server-core.cjs`; `mcp/server.cjs` | real stdio initialize and tools/list: one server, exact name/version/31 order | `mcp-catalog-parity` | PASS — one `cdn-node`, protocol `2025-06-18`, exact frozen 31-Tool order |
+| P6-LIFE-01 | `01` §§9, 11, Phase 6; `05` §§2.1, 3 | `runtime/`; `lifecycle/` | temp-root install, doctor, update, explicit rollback, uninstall, restart/recovery | `lifecycle-isolation` | PASS — function and CLI paths passed only under explicit temporary roots |
+| P6-LIFE-02 | `03` §§4, 8–9 | `lifecycle/`; Hook trust receipt | update/uninstall preserve ledger, artifacts, Hook evidence, and foreign data | deletion/no-clobber cases | PASS — restart reopened the same ledger/ActiveSet; uninstall preserved data and foreign files |
+| P6-SEC-01 | `01` §§7, 11, 13; `02` §§11–12; `05` §§3, 5 | package scanner and package allowlist | generated tarball entries, types, modes, imports, values, credentials, and Future-v2 scan | `package-security` | PASS — actual tarball entry prefix/type/mode/source-byte scans passed |
+| P6-SBOM-01 | `05` §3 | `DEPENDENCIES.json`; lockfile; bundled dependency closure | lockfile closure, license list, declared dependency parity | package dependency parity mutation | PASS — direct and five-entry transitive closure, licenses and integrities equal lockfile |
+| P6-LOADER-01 | `01` Phase 6; `05` §3 | isolated local marketplace fixture and generated package | host-supported non-interactive loader check under temporary Codex home | package/manifest rejection plus loader discovery assertions | PASS — official CLI add/list/install/remove; installed MCP, Skill, Hooks, restart and cleanup all passed |
 | P6-CLEAN-MACHINE | `01` Phase 6; `05` §§3, 5 | none in this round | none available in the current checkout | none | NOT_EXECUTED — no clean-machine installation evidence exists |
 | P6-RUNTIME-REAL | `05` §§4–5 | none in this round | none authorized | none authorized | NOT_EXECUTED — real installed-product and staging checks require explicit authorization |
 
@@ -64,35 +64,59 @@ then remove the copy. The current candidate is never mutated.
 
 | Control | Command | Required failure text | Broken-copy result | Restored-candidate result |
 |---|---|---|---|---|
-| manifest phase/version -> phase1 | `node tests/negative-controls.cjs manifest-phase` | `phase metadata guard` | NOT_EXECUTED | NOT_EXECUTED |
-| lock or server version -> phase1 | `node tests/negative-controls.cjs lock-or-server-version` | `initialize version guard` | NOT_EXECUTED | NOT_EXECUTED |
+| manifest phase/version -> phase1 | `node tests/negative-controls.cjs manifest-phase` | `phase metadata guard` | PASS — exit 1 with named guard | PASS — exit 0 |
+| lock or server version -> phase1 | `node tests/negative-controls.cjs lock-or-server-version` | `phase metadata guard`; `initialize version guard` | PASS — two separate copies each exited 1 with its named guard | PASS — exit 0 |
 | delete/rename frozen Hook event | `node tests/negative-controls.cjs hook-catalog-event` | `Hook catalog guard` | PASS — exit 1 with named guard | PASS — exit 0 |
 | Hook allows deferred Tool/production adapter | `node tests/negative-controls.cjs hook-authority-widening` | `Hook authority guard` | PASS — exit 1 with named guard | PASS — exit 0 |
 | Hook output gets synthetic secret/path | `node tests/negative-controls.cjs hook-output-leak` | `Hook redaction guard` | PASS — exit 1 with named guard | PASS — exit 0 |
-| package gets absolute path/private-key/deployment-like value | `node tests/negative-controls.cjs package-security` | `package security guard` | NOT_EXECUTED | NOT_EXECUTED |
-| tools/list order/count drifts | `node tests/negative-controls.cjs mcp-catalog-parity` | `MCP catalog guard` | NOT_EXECUTED | NOT_EXECUTED |
-| lifecycle writes outside runtime root | `node tests/negative-controls.cjs lifecycle-isolation` | `lifecycle isolation guard` | NOT_EXECUTED | NOT_EXECUTED |
+| package gets absolute path/private-key/deployment-like value | `node tests/negative-controls.cjs package-security` | `package security guard` | PASS — exit 1 with named guard | PASS — exit 0 |
+| tools/list order/count drifts | `node tests/negative-controls.cjs mcp-catalog-parity` | `MCP catalog guard` | PASS — exit 1 with named guard | PASS — exit 0 |
+| lifecycle writes outside runtime root | `node tests/negative-controls.cjs lifecycle-isolation` | `lifecycle isolation guard` | PASS — exit 1 with named guard | PASS — exit 0 |
+
+## Red-green evidence summary
+
+- Phase 5 first run: Hook catalog test failed `0/3`; Hook security test failed
+  `0/10` because the handler/catalog implementation did not yet exist. The
+  implemented candidate then passed the focused Hook suite and the Phase 5
+  full suite (`338/338`).
+- Phase 6 first run: the focused metadata/package/lifecycle suite failed six
+  assertions: stale Phase 4 metadata, stale lock, stale initialize version,
+  legacy manifest shape, missing dependency audit, and incomplete package
+  surface. The implemented candidate passed the same focused suite (`14/14`).
+- The completed source candidate passed `npm test` with `348/348`; the final
+  command ledger below is refreshed again after this document update.
+- Every required negative-control command used a fresh temporary copy, saw a
+  non-zero result with its named guard, deleted the copy, and returned exit 0
+  only after the unmodified candidate passed the mapped test.
+
+## Commit ledger
+
+| Phase | Commit | Post-commit worktree |
+|---|---|---|
+| Phase 5 | `6f2f48cee07248a0930477245ee018d9317405d5` | clean |
+| Phase 6 | recorded in final report after the final verification commit | pending |
 
 ## Final verification ledger
 
 | Command | Exit | Actual output summary |
 |---|---:|---|
-| `npm test` | NOT_EXECUTED | fresh final-candidate run pending |
-| `npm pack --dry-run` | NOT_EXECUTED | fresh final-candidate run pending |
-| `node lifecycle/verify.cjs` with frozen spec path | NOT_EXECUTED | fresh final-candidate run pending |
-| `node lifecycle/doctor.cjs` | NOT_EXECUTED | fresh final-candidate run pending |
-| handoff checksum verification | NOT_EXECUTED | fresh final-candidate run pending |
-| handoff invariants `--all` | NOT_EXECUTED | fresh final-candidate run pending |
-| isolated Codex loader/plugin validation | NOT_EXECUTED | host interface evaluation pending |
+| `npm test` | 0 | PASS — `348/348`; includes generated-package Codex loader, Hook, protocol, lifecycle and security suites |
+| `npm pack --dry-run` | 0 | PASS — `0.3.0-phase6`; 577 files; 411.0 kB; five bundled audited dependencies |
+| `node lifecycle/verify.cjs` with frozen spec path | 0 | PASS — both vendored contract modules byte-equal with recorded SHA-256 |
+| `node lifecycle/doctor.cjs` | 0 | PASS — Node 24.14.1, contract, 31-Tool catalog and 93 schemas; no default runtime root inspected |
+| handoff checksum verification | 0 | PASS — all eight frozen paths `OK` |
+| handoff invariants `--all` | 0 | PASS — 19 invariants, all mutation controls, trajectories and attack cases |
+| official plugin validator | 0 | PASS — current plugin root accepted by the installed official validator |
+| isolated Codex loader/plugin validation | 0 | PASS — generated tarball add/list/install, installed-cache MCP/Skill/Hook discovery, restart, uninstall/remove |
 
 ## Status conclusion
 
 ```yaml
-SOURCE_IMPLEMENTATION: NOT_EXECUTED
-HERMETIC_VALIDATION: NOT_EXECUTED
-CODEX_LOADER_VALIDATION: NOT_EXECUTED
+SOURCE_IMPLEMENTATION: PASS — Phase 5 Hooks and Phase 6 source/package candidate implemented
+HERMETIC_VALIDATION: PASS — 348/348 plus all required isolated mutation controls
+CODEX_LOADER_VALIDATION: PASS — official non-interactive CLI in an isolated temporary Codex root
 REAL_STAGING_E2E: NOT_EXECUTED — explicit authorization required
-INSTALLABLE: NOT_CLAIMED unless loader and clean-machine installation evidence exist
+INSTALLABLE: NOT_CLAIMED — no clean-machine installation evidence exists
 RUNNABLE_REAL_INFRASTRUCTURE: NOT_CLAIMED
 ACCEPTED: NOT_CLAIMED
 ```

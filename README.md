@@ -1,4 +1,4 @@
-# 3x-ui CDN Operator — Core v1 (Phase 0–4 build)
+# 3x-ui CDN Operator — Core v1 (Phase 0–6 source candidate)
 
 Codex-only plugin with exactly one local stdio MCP server, `cdn-node`, for
 auditing or configuring one registered Linux origin as one Cloudflare-fronted
@@ -6,11 +6,11 @@ auditing or configuring one registered Linux origin as one Cloudflare-fronted
 
 ## Status — honest scope of this build
 
-This repository implements **Phase 0–4**: scaffold and local lifecycle, the
+This repository contains the **Phase 0–6 source candidate**: scaffold and local lifecycle, the
 executable contract and ledger, the audit journey, the clean-host installer
 and broker credential flow, the full node journey with authenticated
 end-to-end verification, and the optional BBR branch with both rollback
-graphs.
+graphs, the six Core Hook events, and an audited source-package layout.
 
 - `INSTALLABLE`: **NOT_CLAIMED**
 - `RUNNABLE` (against real infrastructure): **NOT_CLAIMED**
@@ -20,8 +20,9 @@ Every external adapter (SSH, Cloudflare, 3x-ui, Nginx, Keychain broker) is
 still an injected seam. The production adapter set is phase-gated and fails
 closed before dispatch, so no real server, Cloudflare zone, DNS record,
 certificate, kernel, or Keychain item can be read or mutated by this build.
-Phase 5 (Core Hooks) and Phase 6 (packaging, install, real runtime/E2E) are
-not started.
+The suite and lifecycle checks use fake adapters and explicit temporary runtime
+roots. Passing them is not evidence of clean-machine installation, real
+authenticated staging traffic, or real-infrastructure operation.
 
 ## Contract authority
 
@@ -90,7 +91,7 @@ CDN_OPERATOR_SPEC_PATH=/path/to/handoff/02-mcp-tool-plan.md node scripts/extract
 ## Layout
 
 - `.codex-plugin/plugin.json`, `.mcp.json` (single `cdn-node` stdio server),
-  `skills/cdn-node-operator/SKILL.md`, `hooks/hooks.json` (empty Phase 5 stub)
+  `skills/cdn-node-operator/SKILL.md`, `hooks/hooks.json` (six command events)
 - `contract/` — vendored frozen contract modules plus provenance digests
 - `mcp/` — server entry, strict Ajv 2020-12 validation before every handler,
   dispatch, closed adapter/manifest/broker/Keychain registry, forward-dispatch
@@ -98,6 +99,8 @@ CDN_OPERATOR_SPEC_PATH=/path/to/handoff/02-mcp-tool-plan.md node scripts/extract
   engine, SQLite WAL ledger, 31 handlers
 - `runtime/`, `lifecycle/` — controlled per-user runtime root, ActiveSet
   receipts, atomic install/update/explicit-rollback/uninstall, doctor, verify
+- `DEPENDENCIES.json` — lockfile-derived dependency, version, license, and
+  integrity audit list
 - `tests/` — contract parity, 93-schema instances, pre-handler rejection,
   audit journey, ledger/WAL/idempotency/recovery, install journey, broker
   credential boundary, node journey, authenticated E2E, BBR, rollback,
@@ -106,9 +109,10 @@ CDN_OPERATOR_SPEC_PATH=/path/to/handoff/02-mcp-tool-plan.md node scripts/extract
 ## Running
 
 ```sh
-npm install          # installs the single dependency: ajv 8.20.0
+npm ci               # installs the lockfile-pinned dependency closure
 npm test             # full suite (fake adapters, temp data dirs only)
 npm run acceptance   # full suite plus frozen-package re-verification
+npm pack --dry-run   # inspect the audited source-package surface
 node lifecycle/doctor.cjs
 ```
 

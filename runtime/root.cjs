@@ -11,7 +11,7 @@ const path = require("node:path");
 const PRODUCT_DIR_NAME = "cdn-node-operator";
 
 function resolveRuntimeRoot(env = process.env) {
-  const override = env.CDN_NODE_OPERATOR_HOME;
+  const override = env.CDN_NODE_OPERATOR_HOME || env.PLUGIN_DATA;
   const root = override
     ? path.resolve(override)
     : path.join(os.homedir(), "Library", "Application Support", PRODUCT_DIR_NAME);

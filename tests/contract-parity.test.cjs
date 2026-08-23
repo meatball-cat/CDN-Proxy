@@ -75,7 +75,8 @@ test("plugin manifest and single-server .mcp.json load and agree", () => {
   const manifest = JSON.parse(
     fs.readFileSync(path.join(root, ".codex-plugin", "plugin.json"), "utf8"));
   assert.equal(manifest.name, "cdn-node-operator");
-  assert.equal(manifest.status.installable, "NOT_CLAIMED");
-  assert.equal(manifest.status.runnable, "NOT_CLAIMED");
-  assert.equal(manifest.status.accepted, "NOT_CLAIMED");
+  assert.equal(manifest.mcpServers, "./.mcp.json");
+  assert.match(manifest.description, /INSTALLABLE: NOT_CLAIMED/);
+  assert.match(manifest.description, /RUNNABLE: NOT_CLAIMED/);
+  assert.match(manifest.description, /ACCEPTED: NOT_CLAIMED/);
 });

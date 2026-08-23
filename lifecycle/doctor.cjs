@@ -59,6 +59,12 @@ function runDoctor({ env = process.env } = {}) {
     fail("schema-compile", error.message);
   }
 
+  const explicitRuntime = Boolean(env.CDN_NODE_OPERATOR_HOME || env.PLUGIN_DATA);
+  if (!explicitRuntime) {
+    ok("active-set", "source-only doctor: no explicit runtime root was inspected");
+    return { ok: checks.every((check) => check.ok), checks };
+  }
+
   const paths = resolveRuntimeRoot(env);
   const activeSet = readActiveSet(paths);
   if (activeSet) {

@@ -15,11 +15,12 @@ and it never substitutes for the host-mediated approval prompt.
   is the sole authority for Tool names, order, schemas, states, and policy.
   This build vendors that contract verbatim under `contract/` and the server
   serves it unchanged.
-- Current build state: Phase 0-4 source build. The contract, ledger, audit
+- Current build state: Phase 0-6 source candidate. The contract, ledger, audit
   journey, clean-host install, broker credential flow, the node journey with
   authenticated end-to-end verification, and the optional BBR branch with both
-  rollback graphs exist in source and are exercised only against hermetic fake
-  adapters in temporary data directories.
+  rollback graphs, Core Hooks, packaging, and lifecycle safeguards exist in
+  source and are exercised only against hermetic fake adapters and temporary
+  runtime roots.
 - A passing source suite is not a real run. Every production adapter (SSH,
   Cloudflare, 3x-ui, Nginx, Keychain broker) remains phase-gated and fails
   closed before dispatch, so this build reads and mutates no real origin,

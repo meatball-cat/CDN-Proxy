@@ -1,36 +1,33 @@
 {
   "name": "cdn-node-operator",
-  "version": "0.2.0-phase4",
-  "displayName": "3x-ui CDN Operator (Core v1)",
-  "description": "Bounded operator for auditing or configuring one registered Linux origin as one Cloudflare-fronted 3x-ui/Xray WebSocket node. One local stdio MCP server (cdn-node), closed 31-Tool catalog frozen by the Core-v1 contract. Phase 0-4 source build: contract, ledger, audit journey, clean-host install, broker credential flow, node journey with authenticated end-to-end verification, and the optional BBR branch exist in source and are exercised only against hermetic fake adapters in temporary data directories. Every production adapter stays phase-gated and fails closed before dispatch, so this build is not INSTALLABLE, not RUNNABLE against real infrastructure, and not ACCEPTED.",
-  "engines": {
-    "codex": "*",
-    "node": ">=24.0.0"
+  "version": "0.3.0-phase6",
+  "description": "Phase 0-6 source candidate for one local cdn-node stdio MCP and Core Hooks. Hermetic validation only. INSTALLABLE: NOT_CLAIMED; RUNNABLE: NOT_CLAIMED; ACCEPTED: NOT_CLAIMED.",
+  "author": {
+    "name": "3x-ui CDN Operator Contributors"
   },
-  "mcp": {
-    "configPath": "../.mcp.json"
-  },
-  "skills": [
-    {
-      "name": "cdn-node-operator",
-      "path": "../skills/cdn-node-operator/SKILL.md"
-    }
+  "license": "UNLICENSED",
+  "keywords": [
+    "codex",
+    "mcp",
+    "core-v1",
+    "phase-0-6-source-candidate"
   ],
-  "hooks": {
-    "configPath": "../hooks/hooks.json"
-  },
-  "lifecycle": {
-    "install": "../lifecycle/install.cjs",
-    "doctor": "../lifecycle/doctor.cjs",
-    "verify": "../lifecycle/verify.cjs",
-    "update": "../lifecycle/update.cjs",
-    "rollback": "../lifecycle/rollback.cjs",
-    "uninstall": "../lifecycle/uninstall.cjs"
-  },
-  "status": {
-    "phase": "PHASE_0_4_ONLY",
-    "installable": "NOT_CLAIMED",
-    "runnable": "NOT_CLAIMED",
-    "accepted": "NOT_CLAIMED"
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "3x-ui CDN Operator (Core v1)",
+    "shortDescription": "Bounded source candidate for one CDN node operator",
+    "longDescription": "One local stdio MCP, a frozen ordered 31-Tool contract, Core Hooks, and source-only lifecycle safeguards. Production adapters remain phase-gated.",
+    "developerName": "3x-ui CDN Operator Contributors",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Local stdio MCP",
+      "Read-only audit",
+      "Host-approved changes"
+    ],
+    "defaultPrompt": [
+      "Audit one registered node without changing it.",
+      "Show the current masked run status.",
+      "Explain the next safe operator action."
+    ]
   }
 }
