@@ -1,5 +1,5 @@
 {
-  "format": "cdn-node-operator-dependency-audit-v1",
+  "format": "cdn-proxy-dependency-audit-v1",
   "generatedFrom": "package-lock.json",
   "directDependencies": {
     "ajv": "8.20.0"

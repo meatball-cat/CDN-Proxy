@@ -30,7 +30,7 @@ test("MCP catalog guard: actual stdio initialize and tools/list match the frozen
   ].map(JSON.stringify).join("\n") + "\n";
   const result = spawnSync(server.command, server.args, {
     cwd: path.resolve(ROOT, server.cwd),
-    env: { ...process.env, CDN_NODE_OPERATOR_HOME: runtime, NODE_NO_WARNINGS: "1" },
+    env: { ...process.env, CDN_PROXY_HOME: runtime, NODE_NO_WARNINGS: "1" },
     input: requests,
     encoding: "utf8",
     timeout: 30000,

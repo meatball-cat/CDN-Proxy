@@ -64,10 +64,10 @@ expectZero("contract-parity", run(process.execPath, ["lifecycle/verify.cjs"], {
 }));
 
 section("[5] doctor on a fresh temp runtime root");
-const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cdn-operator-acceptance-"));
+const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cdn-proxy-acceptance-"));
 expectZero("doctor", run(process.execPath, ["lifecycle/doctor.cjs"], {
   cwd: ROOT,
-  env: { ...process.env, CDN_NODE_OPERATOR_HOME: tempRoot },
+  env: { ...process.env, CDN_PROXY_HOME: tempRoot },
 }));
 fs.rmSync(tempRoot, { recursive: true, force: true });
 

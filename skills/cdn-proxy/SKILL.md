@@ -1,9 +1,9 @@
 ---
-name: cdn-node-operator
-description: Operate the cdn-node MCP server to audit or configure one registered Linux origin as one Cloudflare-fronted 3x-ui/Xray WebSocket node. Use for run lifecycle, inventories, plans, approvals, evidence, and closure through the frozen Core-v1 31-Tool catalog.
+name: cdn-proxy
+description: Use the cdn-node MCP server to audit or configure one registered Linux origin as one Cloudflare-fronted 3x-ui/Xray WebSocket node. Use for run lifecycle, inventories, plans, approvals, evidence, and closure through the frozen Core-v1 31-Tool catalog.
 ---
 
-# cdn-node operator (Core v1)
+# CDN-Proxy (Core v1)
 
 This Skill only explains and orders calls to the single local `cdn-node` MCP
 server. It cannot mint leases, refs, evidence, success, or rollback authority,

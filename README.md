@@ -1,6 +1,6 @@
-# 3x-ui CDN Operator — Core v1 (Phase 0–6 source candidate)
+# CDN-Proxy — Core v1 (Phase 0–6 source candidate)
 
-Codex-only plugin with exactly one local stdio MCP server, `cdn-node`, for
+`cdn-proxy` is a Codex-only plugin with exactly one local stdio MCP server, `cdn-node`, for
 auditing or configuring one registered Linux origin as one Cloudflare-fronted
 3x-ui/Xray WebSocket node.
 
@@ -34,7 +34,7 @@ the package surface, and continuing approved adapter or staging work.
 | This release provides | This release does not provide |
 |---|---|
 | Phase 0–6 source, tests, Core Hooks, lifecycle guards, and a reproducible npm package | Access to a real server, Cloudflare account, DNS zone, 3x-ui panel, Nginx, or Keychain |
-| 348 hermetic source tests and isolated Codex loader validation | Evidence of a clean-machine end-user installation |
+| 349 hermetic source tests and isolated Codex loader validation | Evidence of a clean-machine end-user installation |
 | Production adapters that are deliberately phase-gated and fail closed | Permission to dispatch a real mutation or proof that one has succeeded |
 | Source-package security checks and a dependency audit | Real staging/E2E evidence or production acceptance |
 
@@ -42,6 +42,12 @@ Publishing or cloning this repository does not change these boundaries. A
 future real-environment phase must be explicitly authorized and must prove
 authenticated traffic, expected egress, correlated logs, protected old-line
 health, and any required rollback behavior.
+
+## Plugin identity
+
+The Codex plugin and npm package are named `cdn-proxy`. Its MCP server remains
+`cdn-node`: that server name and its 31-tool catalog are fixed by the frozen
+Core v1 contract, so a branding change must not rename or reorder them.
 
 ## Contract authority
 
@@ -110,7 +116,7 @@ CDN_OPERATOR_SPEC_PATH=/path/to/handoff/02-mcp-tool-plan.md node scripts/extract
 ## Layout
 
 - `.codex-plugin/plugin.json`, `.mcp.json` (single `cdn-node` stdio server),
-  `skills/cdn-node-operator/SKILL.md`, `hooks/hooks.json` (six command events)
+  `skills/cdn-proxy/SKILL.md`, `hooks/hooks.json` (six command events)
 - `contract/` — vendored frozen contract modules plus provenance digests
 - `mcp/` — server entry, strict Ajv 2020-12 validation before every handler,
   dispatch, closed adapter/manifest/broker/Keychain registry, forward-dispatch
@@ -141,3 +147,9 @@ For a release-candidate recheck, run `npm run acceptance`. It reruns the full
 suite, verifies the frozen handoff package before and after the run, checks the
 vendored contract bytes, and runs `doctor` against a temporary runtime root.
 All of those checks remain local and hermetic.
+
+## License
+
+This source candidate is published with the package license `UNLICENSED`.
+Public availability is for review and approved development; it does not grant
+an open-source redistribution or production-use license.

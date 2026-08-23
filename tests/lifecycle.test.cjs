@@ -20,7 +20,7 @@ const packageVersion = require("../package.json").version;
 
 function tempEnv() {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "cdn-lifecycle-test-"));
-  return { env: { CDN_NODE_OPERATOR_HOME: home }, home };
+  return { env: { CDN_PROXY_HOME: home }, home };
 }
 
 function runLifecycleCli(script, args, env) {
@@ -135,7 +135,7 @@ test("stdio server loads the single cdn-node config and serves the frozen catalo
 
   const child = spawn(serverConfig.command, serverConfig.args, {
     cwd: root,
-    env: { ...process.env, CDN_NODE_OPERATOR_HOME: home },
+    env: { ...process.env, CDN_PROXY_HOME: home },
     stdio: ["pipe", "pipe", "pipe"],
   });
   t.after(() => child.kill());

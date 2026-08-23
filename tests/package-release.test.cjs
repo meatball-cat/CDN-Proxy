@@ -10,13 +10,15 @@ const ROOT = path.resolve(__dirname, "..");
 const readJson = (name) => JSON.parse(fs.readFileSync(path.join(ROOT, name), "utf8"));
 
 test("package security guard: plugin manifest uses the accepted distributable shape", () => {
+  const pkg = readJson("package.json");
   const manifest = readJson(".codex-plugin/plugin.json");
   assert.deepEqual(Object.keys(manifest), [
     "name", "version", "description", "author", "license", "keywords", "mcpServers", "interface",
   ]);
-  assert.equal(manifest.name, "cdn-node-operator");
+  assert.equal(pkg.name, "cdn-proxy");
+  assert.equal(manifest.name, "cdn-proxy");
   assert.equal(manifest.mcpServers, "./.mcp.json");
-  assert.equal(manifest.author.name, "3x-ui CDN Operator Contributors");
+  assert.equal(manifest.author.name, "CDN-Proxy Contributors");
   for (const field of ["displayName", "shortDescription", "longDescription", "developerName", "category", "capabilities", "defaultPrompt"]) {
     assert.ok(manifest.interface[field], `manifest interface missing ${field}`);
   }
@@ -39,7 +41,7 @@ test("package security guard: npm dry-run contains only the audited release surf
     ".codex-plugin/plugin.json", ".mcp.json", "DEPENDENCIES.json", "README.md",
     "hooks/hooks.json", "lifecycle/install.cjs", "mcp/server.cjs",
     "node_modules/ajv/package.json", "package.json", "runtime/root.cjs",
-    "skills/cdn-node-operator/SKILL.md",
+    "skills/cdn-proxy/SKILL.md",
   ];
   for (const name of required) assert.ok(files.includes(name), `package missing ${name}`);
   for (const name of files) {

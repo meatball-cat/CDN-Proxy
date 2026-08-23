@@ -1,7 +1,15 @@
 {
-  "name": "cdn-node-operator-core-v1",
+  "name": "cdn-proxy",
   "version": "0.3.0-phase6",
-  "description": "3x-ui CDN Operator Core-v1 source candidate with one local stdio MCP server and Core Hooks. Phases 0-6 source only; real infrastructure is not claimed.",
+  "description": "CDN-Proxy Core v1 source candidate with one local stdio MCP server and Core Hooks. Phases 0-6 source only; real infrastructure is not claimed.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meatball-cat/CDN-Proxy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/meatball-cat/CDN-Proxy/issues"
+  },
+  "homepage": "https://github.com/meatball-cat/CDN-Proxy#readme",
   "license": "UNLICENSED",
   "files": [
     ".codex-plugin/",

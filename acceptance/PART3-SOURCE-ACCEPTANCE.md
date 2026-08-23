@@ -83,7 +83,7 @@ then remove the copy. The current candidate is never mutated.
   assertions: stale Phase 4 metadata, stale lock, stale initialize version,
   legacy manifest shape, missing dependency audit, and incomplete package
   surface. The implemented candidate passed the same focused suite (`14/14`).
-- The completed source candidate passed `npm test` with `348/348`; the final
+- The completed source candidate passed `npm test` with `349/349`; the final
   command ledger below is refreshed again after this document update.
 - Every required negative-control command used a fresh temporary copy, saw a
   non-zero result with its named guard, deleted the copy, and returned exit 0
@@ -100,8 +100,8 @@ then remove the copy. The current candidate is never mutated.
 
 | Command | Exit | Actual output summary |
 |---|---:|---|
-| `npm test` | 0 | PASS — `348/348`; includes generated-package Codex loader, Hook, protocol, lifecycle and security suites |
-| `npm pack --dry-run` | 0 | PASS — `0.3.0-phase6`; 577 files; 411.0 kB; five bundled audited dependencies |
+| `npm test` | 0 | PASS — `349/349`; includes generated-package Codex loader, Hook, protocol, lifecycle and security suites |
+| `npm pack --dry-run` | 0 | PASS — `cdn-proxy@0.3.0-phase6`; 577 files; 411.7 kB; five bundled audited dependencies |
 | `node lifecycle/verify.cjs` with frozen spec path | 0 | PASS — both vendored contract modules byte-equal with recorded SHA-256 |
 | `node lifecycle/doctor.cjs` | 0 | PASS — Node 24.14.1, contract, 31-Tool catalog and 93 schemas; no default runtime root inspected |
 | handoff checksum verification | 0 | PASS — all eight frozen paths `OK` |
@@ -113,7 +113,7 @@ then remove the copy. The current candidate is never mutated.
 
 ```yaml
 SOURCE_IMPLEMENTATION: PASS — Phase 5 Hooks and Phase 6 source/package candidate implemented
-HERMETIC_VALIDATION: PASS — 348/348 plus all required isolated mutation controls
+HERMETIC_VALIDATION: PASS — 349/349 plus all required isolated mutation controls
 CODEX_LOADER_VALIDATION: PASS — official non-interactive CLI in an isolated temporary Codex root
 REAL_STAGING_E2E: NOT_EXECUTED — explicit authorization required
 INSTALLABLE: NOT_CLAIMED — no clean-machine installation evidence exists

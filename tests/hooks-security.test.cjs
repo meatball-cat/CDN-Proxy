@@ -17,7 +17,7 @@ function fixture(t) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "cdn-hook-test-"));
   t.after(() => fs.rmSync(home, { recursive: true, force: true }));
   const env = {
-    CDN_NODE_OPERATOR_HOME: home,
+    CDN_PROXY_HOME: home,
     PLUGIN_ROOT: ROOT,
     PLUGIN_DATA: home,
   };
@@ -90,7 +90,7 @@ test("missing Hook config and wrong Node/runtime identity fail closed with a fix
   });
   assert.equal(missing.systemMessage, "HOOK_UNAVAILABLE");
 
-  const activePath = path.join(env.CDN_NODE_OPERATOR_HOME, "active.json");
+  const activePath = path.join(env.CDN_PROXY_HOME, "active.json");
   const active = JSON.parse(fs.readFileSync(activePath, "utf8"));
   active.nodeExecutable = path.join(path.sep, "invalid", "node");
   fs.writeFileSync(activePath, JSON.stringify(active, null, 2) + "\n");
@@ -105,8 +105,8 @@ test("trust tuple drift in receipt, owner, mode, or runtime symlink fails closed
 
   await t.test("receipt digest drift", (st) => {
     const { env } = fixture(st);
-    const active = JSON.parse(fs.readFileSync(path.join(env.CDN_NODE_OPERATOR_HOME, "active.json"), "utf8"));
-    const receiptPath = path.join(env.CDN_NODE_OPERATOR_HOME, "versions", active.version, "receipt.json");
+    const active = JSON.parse(fs.readFileSync(path.join(env.CDN_PROXY_HOME, "active.json"), "utf8"));
+    const receiptPath = path.join(env.CDN_PROXY_HOME, "versions", active.version, "receipt.json");
     const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
     receipt.files[0].sha256 = digest("f");
     fs.writeFileSync(receiptPath, JSON.stringify(receipt) + "\n", { mode: 0o600 });
@@ -115,7 +115,7 @@ test("trust tuple drift in receipt, owner, mode, or runtime symlink fails closed
 
   await t.test("owner identity drift", (st) => {
     const { env } = fixture(st);
-    const activePath = path.join(env.CDN_NODE_OPERATOR_HOME, "active.json");
+    const activePath = path.join(env.CDN_PROXY_HOME, "active.json");
     const active = JSON.parse(fs.readFileSync(activePath, "utf8"));
     active.ownerUid += 1;
     fs.writeFileSync(activePath, JSON.stringify(active) + "\n", { mode: 0o600 });
@@ -368,11 +368,11 @@ test("Stop is honest, recursion-safe, and cannot claim acceptance without server
 test("Hooks never mutate ActiveSet, ledger, approval, lease, receipt, or server state", (t) => {
   const { runHook } = require("../hooks/runner.cjs");
   const { env } = fixture(t);
-  const activePath = path.join(env.CDN_NODE_OPERATOR_HOME, "active.json");
-  const versionsPath = path.join(env.CDN_NODE_OPERATOR_HOME, "versions");
+  const activePath = path.join(env.CDN_PROXY_HOME, "active.json");
+  const versionsPath = path.join(env.CDN_PROXY_HOME, "versions");
   const beforeActive = fs.readFileSync(activePath);
   const beforeVersions = fs.readdirSync(versionsPath, { recursive: true }).sort();
-  const dataPath = path.join(env.CDN_NODE_OPERATOR_HOME, "data");
+  const dataPath = path.join(env.CDN_PROXY_HOME, "data");
   const beforeData = fs.readdirSync(dataPath, { recursive: true }).sort();
 
   runHook("SessionStart", common("SessionStart", { source: "startup" }), { env });
@@ -391,13 +391,13 @@ test("Hooks never mutate ActiveSet, ledger, approval, lease, receipt, or server 
 test("SessionEnd removes only Hook-owned temporary records and preserves foreign/product data", (t) => {
   const { runHook } = require("../hooks/runner.cjs");
   const { env } = fixture(t);
-  const foreign = path.join(env.CDN_NODE_OPERATOR_HOME, "foreign.keep");
-  const product = path.join(env.CDN_NODE_OPERATOR_HOME, "data", "ledger.keep");
+  const foreign = path.join(env.CDN_PROXY_HOME, "foreign.keep");
+  const product = path.join(env.CDN_PROXY_HOME, "data", "ledger.keep");
   fs.writeFileSync(foreign, "foreign");
   fs.writeFileSync(product, "product");
 
   runHook("SessionStart", common("SessionStart", { source: "startup" }), { env });
-  const hookState = path.join(env.CDN_NODE_OPERATOR_HOME, "hook-state");
+  const hookState = path.join(env.CDN_PROXY_HOME, "hook-state");
   assert.ok(fs.existsSync(hookState));
   const output = runHook("SessionEnd", common("SessionEnd", { reason: "other" }), { env });
   assert.equal(output.systemMessage, "HOOK_SESSION_ENDED_LOCAL_RECORDS_CLEANED");

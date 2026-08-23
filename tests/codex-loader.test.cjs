@@ -9,8 +9,8 @@ const { spawnSync } = require("node:child_process");
 
 const ROOT = path.resolve(__dirname, "..");
 const VERSION = require("../package.json").version;
-const MARKETPLACE = "cdn-operator-hermetic";
-const PLUGIN_ID = `cdn-node-operator@${MARKETPLACE}`;
+const MARKETPLACE = "cdn-proxy-hermetic";
+const PLUGIN_ID = `cdn-proxy@${MARKETPLACE}`;
 
 function command(command, args, options = {}) {
   return spawnSync(command, args, {
@@ -48,7 +48,7 @@ function stdioRoundTrip(installRoot, runtimeRoot) {
     cwd: path.resolve(installRoot, server.cwd),
     env: {
       ...process.env,
-      CDN_NODE_OPERATOR_HOME: runtimeRoot,
+      CDN_PROXY_HOME: runtimeRoot,
       PLUGIN_DATA: runtimeRoot,
       PLUGIN_ROOT: installRoot,
       NODE_NO_WARNINGS: "1",
@@ -70,7 +70,7 @@ test("Codex loader validation: generated package installs and discovers one MCP,
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "cdn-codex-loader-"));
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
   const marketplaceRoot = path.join(temporary, "marketplace");
-  const pluginRoot = path.join(marketplaceRoot, "plugins", "cdn-node-operator");
+  const pluginRoot = path.join(marketplaceRoot, "plugins", "cdn-proxy");
   const codexRoot = path.join(temporary, "codex-root");
   const runtimeRoot = path.join(temporary, "runtime-root");
   fs.mkdirSync(path.join(marketplaceRoot, ".agents", "plugins"), { recursive: true });
@@ -90,10 +90,10 @@ test("Codex loader validation: generated package installs and discovers one MCP,
 
   const marketplace = {
     name: MARKETPLACE,
-    interface: { displayName: "CDN Operator Hermetic" },
+    interface: { displayName: "CDN-Proxy Hermetic" },
     plugins: [{
-      name: "cdn-node-operator",
-      source: { source: "local", path: "./plugins/cdn-node-operator" },
+      name: "cdn-proxy",
+      source: { source: "local", path: "./plugins/cdn-proxy" },
       policy: { installation: "AVAILABLE", authentication: "ON_INSTALL" },
       category: "Developer Tools",
     }],
@@ -122,14 +122,14 @@ test("Codex loader validation: generated package installs and discovers one MCP,
   assert.equal(installed.version, VERSION);
   assert.ok(fs.realpathSync(installed.installedPath).startsWith(fs.realpathSync(codexRoot) + path.sep));
   const installRoot = fs.realpathSync(installed.installedPath);
-  assert.ok(fs.existsSync(path.join(installRoot, "skills", "cdn-node-operator", "SKILL.md")));
+  assert.ok(fs.existsSync(path.join(installRoot, "skills", "cdn-proxy", "SKILL.md")));
   assert.deepEqual(Object.keys(JSON.parse(
     fs.readFileSync(path.join(installRoot, "hooks", "hooks.json"), "utf8"),
   ).hooks), ["SessionStart", "PreToolUse", "PermissionRequest", "PostToolUse", "Stop", "SessionEnd"]);
 
   const lifecycleEnv = {
     ...isolatedEnv,
-    CDN_NODE_OPERATOR_HOME: runtimeRoot,
+    CDN_PROXY_HOME: runtimeRoot,
     PLUGIN_DATA: runtimeRoot,
     PLUGIN_ROOT: installRoot,
   };

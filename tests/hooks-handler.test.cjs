@@ -17,7 +17,7 @@ function fixture(t) {
   t.after(() => fs.rmSync(unrelatedCwd, { recursive: true, force: true }));
   const env = {
     ...process.env,
-    CDN_NODE_OPERATOR_HOME: root,
+    CDN_PROXY_HOME: root,
     PLUGIN_ROOT: ROOT,
     PLUGIN_DATA: root,
   };

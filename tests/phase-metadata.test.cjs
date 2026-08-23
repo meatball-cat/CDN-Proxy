@@ -15,7 +15,7 @@ const readText = (...parts) => fs.readFileSync(path.join(ROOT, ...parts), "utf8"
 
 const PACKAGE_TEXT = readText("package.json");
 const MANIFEST_TEXT = readText(".codex-plugin", "plugin.json");
-const SKILL_TEXT = readText("skills", "cdn-node-operator", "SKILL.md");
+const SKILL_TEXT = readText("skills", "cdn-proxy", "SKILL.md");
 const README_TEXT = readText("README.md");
 const lock = JSON.parse(readText("package-lock.json"));
 
@@ -43,7 +43,7 @@ test("manifest, Skill, README, and package all name the same phase range", () =>
   const documents = {
     "package.json": PACKAGE_TEXT,
     ".codex-plugin/plugin.json": MANIFEST_TEXT,
-    "skills/cdn-node-operator/SKILL.md": SKILL_TEXT,
+    "skills/cdn-proxy/SKILL.md": SKILL_TEXT,
     "README.md": README_TEXT,
   };
   for (const [name, text] of Object.entries(documents)) {
@@ -71,7 +71,7 @@ test("initialize version guard: actual ServerCore.initialize matches the package
 test("the three honest-scope claims stay unclaimed everywhere they appear", () => {
   for (const [name, text] of Object.entries({
     ".codex-plugin/plugin.json": MANIFEST_TEXT,
-    "skills/cdn-node-operator/SKILL.md": SKILL_TEXT,
+    "skills/cdn-proxy/SKILL.md": SKILL_TEXT,
     "README.md": README_TEXT,
   })) {
     for (const token of ["INSTALLABLE", "RUNNABLE", "ACCEPTED"]) {
