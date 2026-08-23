@@ -1,7 +1,7 @@
 "use strict";
 
 // Acceptance: the user-visible phase labels cannot diverge again. The
-// The parsed package, lock root, parsed manifest, actual MCP initialize
+// parsed package, lock root, parsed manifest, actual MCP initialize
 // response, Skill, and README must all agree on the source-candidate phase.
 
 const test = require("node:test");
@@ -22,7 +22,7 @@ const lock = JSON.parse(readText("package-lock.json"));
 const pkg = JSON.parse(PACKAGE_TEXT);
 const manifest = JSON.parse(MANIFEST_TEXT);
 
-// "Phase 0-4" / "Phases 0-4", hyphen or en dash, case-insensitive.
+// "Phase 0-N" / "Phases 0-N", hyphen or en dash, case-insensitive.
 const PHASE_RANGE = /\bPhases?\s*0\s*[-\u2013]\s*(\d+)/gi;
 
 function declaredRanges(text) {

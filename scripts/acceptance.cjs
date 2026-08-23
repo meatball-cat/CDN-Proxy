@@ -36,7 +36,7 @@ function expectZero(label, result) {
   if (result.status !== 0) failures.push(`${label} exited ${result.status}`);
 }
 
-lines.push("=== Core-v1 Phase 0-4 acceptance run ===");
+lines.push("=== Core-v1 Phase 0-6 source acceptance run ===");
 lines.push(`date: ${new Date().toISOString()}`);
 lines.push(`node: ${process.version}`);
 lines.push(`handoff: ${SPEC_DIR}`);

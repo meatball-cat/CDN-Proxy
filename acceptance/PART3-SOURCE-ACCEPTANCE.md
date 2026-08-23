@@ -94,7 +94,7 @@ then remove the copy. The current candidate is never mutated.
 | Phase | Commit | Post-commit worktree |
 |---|---|---|
 | Phase 5 | `6f2f48cee07248a0930477245ee018d9317405d5` | clean |
-| Phase 6 | recorded in final report after the final verification commit | pending |
+| Phase 6 | `fda5677e2e104090c4f1ca30d3b9f3e483ef0f1e` | clean |
 
 ## Final verification ledger
 
