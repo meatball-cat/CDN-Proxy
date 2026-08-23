@@ -143,9 +143,93 @@ CREATE TABLE IF NOT EXISTS reconciliation_obligations (
 );
 CREATE TABLE IF NOT EXISTS secret_refs (
   secret_ref TEXT PRIMARY KEY,
+  run_id TEXT,
   role TEXT NOT NULL,
   provenance TEXT NOT NULL,
   disposition TEXT NOT NULL DEFAULT 'current',
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS identity_bindings (
+  run_id TEXT NOT NULL,
+  field TEXT NOT NULL,
+  identity_digest TEXT NOT NULL,
+  bound_at TEXT NOT NULL,
+  PRIMARY KEY (run_id, field)
+);
+CREATE TABLE IF NOT EXISTS run_scalars (
+  run_id TEXT NOT NULL,
+  key TEXT NOT NULL,
+  value TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY (run_id, key)
+);
+CREATE TABLE IF NOT EXISTS stage_receipts (
+  receipt_ref TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  family TEXT NOT NULL CHECK (family IN ('MAIN_ROLLBACK_STAGE_RECEIPT','BBR_ROLLBACK_STAGE_RECEIPT')),
+  operation_ref TEXT NOT NULL,
+  stage_id TEXT NOT NULL,
+  stage_index INTEGER NOT NULL,
+  readback_digest TEXT NOT NULL,
+  details TEXT NOT NULL DEFAULT '{}',
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS aggregate_receipts (
+  receipt_ref TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  receipt_type TEXT NOT NULL,
+  operation_ref TEXT NOT NULL,
+  selection_digest TEXT NOT NULL,
+  stage_receipt_refs TEXT NOT NULL,
+  commit_digest TEXT NOT NULL,
+  final_digest TEXT NOT NULL,
+  details TEXT NOT NULL DEFAULT '{}',
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS recovery_obligations (
+  obligation_ref TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  column_name TEXT NOT NULL CHECK (column_name IN ('main','bbr')),
+  cause TEXT NOT NULL,
+  bound_graph_digest TEXT,
+  status TEXT NOT NULL DEFAULT 'current',
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS bbr_source_episodes (
+  episode_ref TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  source_row_id TEXT NOT NULL,
+  durable_cause TEXT NOT NULL,
+  baseline_kind TEXT NOT NULL,
+  baseline_receipt_ref TEXT NOT NULL,
+  baseline_change_ref TEXT NOT NULL,
+  baseline_binding_digest TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'current',
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS admission_receipts (
+  receipt_ref TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  receipt_type TEXT NOT NULL,
+  binding_digest TEXT NOT NULL,
+  consumed INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS residuals (
+  residual_ref TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  masked_summary TEXT NOT NULL,
+  binding_digest TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS secret_dispositions (
+  receipt_ref TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  secret_ref TEXT NOT NULL,
+  role TEXT NOT NULL,
+  disposition TEXT NOT NULL,
+  residual_ref TEXT,
   created_at TEXT NOT NULL
 );
 `;
@@ -278,7 +362,7 @@ class Ledger {
 
   freshEvidence(runId, evidenceType) {
     const rows = this.db.prepare(
-      "SELECT * FROM evidence WHERE run_id = ? AND evidence_type = ? AND invalidated = 0 ORDER BY created_at DESC, evidence_ref DESC",
+      "SELECT * FROM evidence WHERE run_id = ? AND evidence_type = ? AND invalidated = 0 ORDER BY rowid DESC",
     ).all(runId, evidenceType);
     const nowMs = this.now();
     for (const row of rows) {
@@ -290,7 +374,7 @@ class Ledger {
 
   listEvidence(runId, afterRef = null, maxItems = 100) {
     const all = this.db.prepare(
-      "SELECT evidence_ref, masked_summary FROM evidence WHERE run_id = ? ORDER BY created_at ASC, evidence_ref ASC",
+      "SELECT evidence_ref, masked_summary FROM evidence WHERE run_id = ? ORDER BY rowid ASC",
     ).all(runId);
     let start = 0;
     if (afterRef) {
@@ -317,7 +401,7 @@ class Ledger {
 
   currentPlan(runId) {
     const row = this.db.prepare(
-      "SELECT * FROM plans WHERE run_id = ? AND status = 'current' ORDER BY created_at DESC LIMIT 1",
+      "SELECT * FROM plans WHERE run_id = ? AND status = 'current' ORDER BY rowid DESC LIMIT 1",
     ).get(runId);
     return row || null;
   }
@@ -411,11 +495,11 @@ class Ledger {
   latestReport(runId, label = null) {
     if (label) {
       return this.db.prepare(
-        "SELECT * FROM reports WHERE run_id = ? AND label = ? ORDER BY created_at DESC LIMIT 1",
+        "SELECT * FROM reports WHERE run_id = ? AND label = ? ORDER BY rowid DESC LIMIT 1",
       ).get(runId, label) || null;
     }
     return this.db.prepare(
-      "SELECT * FROM reports WHERE run_id = ? ORDER BY created_at DESC LIMIT 1",
+      "SELECT * FROM reports WHERE run_id = ? ORDER BY rowid DESC LIMIT 1",
     ).get(runId) || null;
   }
 
@@ -431,7 +515,7 @@ class Ledger {
 
   getClosure(runId, scope) {
     return this.db.prepare(
-      "SELECT * FROM closures WHERE run_id = ? AND scope = ? ORDER BY created_at DESC LIMIT 1",
+      "SELECT * FROM closures WHERE run_id = ? AND scope = ? ORDER BY rowid DESC LIMIT 1",
     ).get(runId, scope) || null;
   }
 
@@ -444,7 +528,7 @@ class Ledger {
   }
 
   ownershipByRun(runId) {
-    return this.db.prepare("SELECT * FROM ownership WHERE run_id = ? ORDER BY created_at ASC").all(runId);
+    return this.db.prepare("SELECT * FROM ownership WHERE run_id = ? ORDER BY rowid ASC").all(runId);
   }
 
   openReconciliationObligation(runId) {
@@ -459,14 +543,215 @@ class Ledger {
     ).run(obligationRef, runId, originalTool, failureContext, this.nowIso());
   }
 
-  registerSecretRef({ secretRef, role, provenance }) {
+  registerSecretRef({ secretRef, runId = null, role, provenance }) {
     this.db.prepare(
-      "INSERT INTO secret_refs (secret_ref, role, provenance, created_at) VALUES (?, ?, ?, ?)",
-    ).run(secretRef, role, provenance, this.nowIso());
+      "INSERT INTO secret_refs (secret_ref, run_id, role, provenance, created_at) VALUES (?, ?, ?, ?, ?)",
+    ).run(secretRef, runId, role, provenance, this.nowIso());
   }
 
   getSecretRef(secretRef) {
     return this.db.prepare("SELECT * FROM secret_refs WHERE secret_ref = ?").get(secretRef) || null;
+  }
+
+  // --- identity bindings and per-run scalars (Phase 3) ---
+
+  recordIdentityBinding(runId, field, identityDigest) {
+    this.db.prepare(
+      "INSERT INTO identity_bindings (run_id, field, identity_digest, bound_at) VALUES (?, ?, ?, ?) " +
+      "ON CONFLICT(run_id, field) DO UPDATE SET identity_digest = excluded.identity_digest, bound_at = excluded.bound_at",
+    ).run(runId, field, identityDigest, this.nowIso());
+  }
+
+  identityBindings(runId) {
+    const rows = this.db.prepare("SELECT field, identity_digest FROM identity_bindings WHERE run_id = ?").all(runId);
+    return Object.fromEntries(rows.map((row) => [row.field, row.identity_digest]));
+  }
+
+  setScalar(runId, key, value) {
+    this.db.prepare(
+      "INSERT INTO run_scalars (run_id, key, value, updated_at) VALUES (?, ?, ?, ?) " +
+      "ON CONFLICT(run_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
+    ).run(runId, key, JSON.stringify(value), this.nowIso());
+  }
+
+  getScalar(runId, key) {
+    const row = this.db.prepare("SELECT value FROM run_scalars WHERE run_id = ? AND key = ?").get(runId, key);
+    return row ? JSON.parse(row.value) : null;
+  }
+
+  recordWebsocketPathDigest(runId, digest) {
+    this.setScalar(runId, "websocket_path_digest", digest);
+  }
+
+  websocketPathDigest(runId) {
+    return this.getScalar(runId, "websocket_path_digest");
+  }
+
+  // --- ownership lookups used by the rollback graph ---
+
+  ownershipByKind(runId, objectKind) {
+    return this.db.prepare(
+      "SELECT * FROM ownership WHERE run_id = ? AND object_kind = ? ORDER BY rowid ASC",
+    ).all(runId, objectKind);
+  }
+
+  latestOwnership(runId, objectKind) {
+    const rows = this.ownershipByKind(runId, objectKind);
+    return rows.length > 0 ? rows[rows.length - 1] : null;
+  }
+
+  // Committed external mutations owned by this run, in commit order. The
+  // BBR drop-in is tracked separately and is never part of the main graph.
+  committedMainChanges(runId) {
+    return this.db.prepare(
+      "SELECT * FROM ownership WHERE run_id = ? AND object_kind LIKE 'OWNED_%' AND object_kind != 'OWNED_BBR_APPLY' ORDER BY rowid ASC",
+    ).all(runId);
+  }
+
+  // --- durable rollback stage receipts ---
+
+  insertStageReceipt({ receiptRef, runId, family, operationRef, stageId, stageIndex, readbackDigest, details = {} }) {
+    this.db.prepare(
+      "INSERT INTO stage_receipts (receipt_ref, run_id, family, operation_ref, stage_id, stage_index, readback_digest, details, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    ).run(receiptRef, runId, family, operationRef, stageId, stageIndex, readbackDigest, JSON.stringify(details), this.nowIso());
+  }
+
+  stageReceipts(runId, family) {
+    return this.db.prepare(
+      "SELECT * FROM stage_receipts WHERE run_id = ? AND family = ? ORDER BY stage_index ASC, rowid ASC",
+    ).all(runId, family);
+  }
+
+  stageReceiptIds(runId, family) {
+    return this.stageReceipts(runId, family).map((row) => row.stage_id);
+  }
+
+  insertAggregateReceipt({ receiptRef, runId, receiptType, operationRef, selectionDigest, stageReceiptRefs, commitDigest, finalDigest, details = {} }) {
+    this.db.prepare(
+      "INSERT INTO aggregate_receipts (receipt_ref, run_id, receipt_type, operation_ref, selection_digest, stage_receipt_refs, commit_digest, final_digest, details, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    ).run(receiptRef, runId, receiptType, operationRef, selectionDigest, JSON.stringify(stageReceiptRefs), commitDigest, finalDigest, JSON.stringify(details), this.nowIso());
+  }
+
+  aggregateReceipt(runId, receiptType) {
+    const row = this.db.prepare(
+      "SELECT * FROM aggregate_receipts WHERE run_id = ? AND receipt_type = ? ORDER BY rowid DESC LIMIT 1",
+    ).get(runId, receiptType);
+    if (!row) return null;
+    return { ...row, stage_receipt_refs: JSON.parse(row.stage_receipt_refs), details: JSON.parse(row.details) };
+  }
+
+  // --- recovery obligations ---
+
+  insertRecoveryObligation({ obligationRef, runId, column, cause, boundGraphDigest = null }) {
+    this.db.prepare(
+      "INSERT INTO recovery_obligations (obligation_ref, run_id, column_name, cause, bound_graph_digest, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+    ).run(obligationRef, runId, column, cause, boundGraphDigest, this.nowIso());
+  }
+
+  currentRecoveryObligation(runId, column) {
+    return this.db.prepare(
+      "SELECT * FROM recovery_obligations WHERE run_id = ? AND column_name = ? AND status = 'current' ORDER BY rowid DESC LIMIT 1",
+    ).get(runId, column) || null;
+  }
+
+  consumeRecoveryObligation(obligationRef) {
+    this.db.prepare("UPDATE recovery_obligations SET status = 'consumed' WHERE obligation_ref = ?").run(obligationRef);
+  }
+
+  // --- BBR rollback source obligation episodes ---
+
+  insertBbrSourceEpisode({ episodeRef, runId, sourceRowId, durableCause, baselineKind, baselineReceiptRef, baselineChangeRef, baselineBindingDigest }) {
+    this.db.prepare(
+      "INSERT INTO bbr_source_episodes (episode_ref, run_id, source_row_id, durable_cause, baseline_kind, baseline_receipt_ref, baseline_change_ref, baseline_binding_digest, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    ).run(episodeRef, runId, sourceRowId, durableCause, baselineKind, baselineReceiptRef, baselineChangeRef, baselineBindingDigest, this.nowIso());
+  }
+
+  currentBbrSourceEpisodes(runId) {
+    return this.db.prepare(
+      "SELECT * FROM bbr_source_episodes WHERE run_id = ? AND status = 'current' ORDER BY rowid ASC",
+    ).all(runId);
+  }
+
+  consumeBbrSourceEpisode(episodeRef, status = "consumed") {
+    this.db.prepare("UPDATE bbr_source_episodes SET status = ? WHERE episode_ref = ?").run(status, episodeRef);
+  }
+
+  supersedeAllBbrSourceEpisodes(runId) {
+    this.db.prepare("UPDATE bbr_source_episodes SET status = 'superseded' WHERE run_id = ? AND status = 'current'").run(runId);
+  }
+
+  // --- durable admission receipts (main zero-dispatch lease expiry) ---
+
+  insertAdmissionReceipt({ receiptRef, runId, receiptType, bindingDigest }) {
+    this.db.prepare(
+      "INSERT INTO admission_receipts (receipt_ref, run_id, receipt_type, binding_digest, created_at) VALUES (?, ?, ?, ?, ?)",
+    ).run(receiptRef, runId, receiptType, bindingDigest, this.nowIso());
+  }
+
+  currentAdmissionReceipt(runId, receiptType) {
+    return this.db.prepare(
+      "SELECT * FROM admission_receipts WHERE run_id = ? AND receipt_type = ? AND consumed = 0 ORDER BY rowid DESC LIMIT 1",
+    ).get(runId, receiptType) || null;
+  }
+
+  consumeAdmissionReceipt(receiptRef) {
+    this.db.prepare("UPDATE admission_receipts SET consumed = 1 WHERE receipt_ref = ?").run(receiptRef);
+  }
+
+  // --- residual disclosures and secret dispositions ---
+
+  insertResidual({ residualRef, runId, kind, maskedSummary, bindingDigest }) {
+    this.db.prepare(
+      "INSERT INTO residuals (residual_ref, run_id, kind, masked_summary, binding_digest, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+    ).run(residualRef, runId, kind, maskedSummary, bindingDigest, this.nowIso());
+  }
+
+  residualsByRun(runId) {
+    return this.db.prepare("SELECT * FROM residuals WHERE run_id = ? ORDER BY rowid ASC").all(runId);
+  }
+
+  insertSecretDisposition({ receiptRef, runId, secretRef, role, disposition, residualRef = null }) {
+    this.db.prepare(
+      "INSERT INTO secret_dispositions (receipt_ref, run_id, secret_ref, role, disposition, residual_ref, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    ).run(receiptRef, runId, secretRef, role, disposition, residualRef, this.nowIso());
+    this.db.prepare("UPDATE secret_refs SET disposition = ? WHERE secret_ref = ?").run(disposition, secretRef);
+  }
+
+  secretDispositions(runId) {
+    return this.db.prepare("SELECT * FROM secret_dispositions WHERE run_id = ? ORDER BY rowid ASC").all(runId);
+  }
+
+  // Same-run generated secrets are the only ones a rollback may ever
+  // dispose; imported onboarding secrets carry no run_id and are therefore
+  // structurally invisible to this query.
+  sameRunGeneratedSecrets(runId, role = null) {
+    if (role) {
+      return this.db.prepare(
+        "SELECT * FROM secret_refs WHERE run_id = ? AND role = ? AND provenance = 'same-run-generated' ORDER BY rowid ASC",
+      ).all(runId, role);
+    }
+    return this.db.prepare(
+      "SELECT * FROM secret_refs WHERE run_id = ? AND provenance = 'same-run-generated' ORDER BY rowid ASC",
+    ).all(runId);
+  }
+
+  currentSameRunSecret(runId, role) {
+    const rows = this.sameRunGeneratedSecrets(runId, role).filter((row) => row.disposition === "current");
+    return rows.length > 0 ? rows[rows.length - 1] : null;
+  }
+
+  // --- reconciliation obligation lifecycle ---
+
+  resolveReconciliationObligation(obligationRef, status = "resolved") {
+    this.db.prepare("UPDATE reconciliation_obligations SET status = ? WHERE obligation_ref = ?").run(status, obligationRef);
+  }
+
+  invalidateEvidenceFamily(runId, evidenceType) {
+    this.db.prepare("UPDATE evidence SET invalidated = 1 WHERE run_id = ? AND evidence_type = ?").run(runId, evidenceType);
+  }
+
+  evidenceRow(evidenceRef) {
+    return this.db.prepare("SELECT * FROM evidence WHERE evidence_ref = ?").get(evidenceRef) || null;
   }
 }
 

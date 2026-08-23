@@ -1,6 +1,7 @@
-=== Core-v1 Phase 0-1 acceptance run ===
-date: 2026-08-22T14:24:28Z
+=== Core-v1 Phase 0-4 acceptance run ===
+date: 2026-08-23T05:32:58.880Z
 node: v24.14.1
+handoff: /Users/ninebot/Desktop/3x-ui-cdn-operator-development-handoff
 
 --- [1] frozen handoff checksum re-verification (must stay 8/8, untouched) ---
 00-verified-host-facts.md: OK
@@ -13,217 +14,463 @@ README.md: OK
 validation/spec-invariants.cjs: OK
 
 --- [2] frozen spec-invariants re-run (read-only) ---
+=== Core-v1 spec invariants ===
+PASS   1  one-server Core-v1 scope and exact ordered 31-Tool catalog
+          - one cdn-node server; exact ordered 31 Tools; ACME/zone-setting/privacy/Surge/rotation deferred
+PASS   2  all 93 public schemas are closed, executable and tool-bound
+          - 31 input + 31 data + 31 output-envelope schemas = 93 instance-tested groups
+PASS   3  only main and BBR phase columns exist and every resting state has a writer/exit
+          - main=19 states; BBR=11; every nonterminal state has an executable writer and exit
+PASS   4  every Tool has closed policy metadata and a live declared error vocabulary
+          - 33 error codes; zero unknown or dead; 31 closed policy objects
+PASS   5  helper and broker operations are closed, caller-bound and never return plaintext
+          - 25 helper and 22 broker operations, exact and caller-bound
+PASS   6  xui_install is clean-host-only, fixed-adapter, secretless and owned-invertible
+          - clean host only; pinned adapter; no caller command/path/URL or plaintext secret; owned inverse required
+PASS   7  Cloudflare, certificate, Nginx and client profile bind one exact node hostname
+          - one onboarding hostname authority; CF name = cert SAN = Nginx server_name = profile address/SNI/Host
+PASS   8  BBR is limited to existing-kernel support and one owned drop-in
+          - no kernel install/upgrade, bootloader/shared sysctl edit or reboot; two keys in one owned drop-in
+PASS   9  mutations obey no-clobber and rollback only the same-run owned graph
+          - 9 mutating Tools checked for owned receipts, before/after digests and rollback metadata
+PASS  10  E2E acceptance requires authenticated traffic, expected egress, logs and prior-line health
+          - latency/TLS/certificate/HTTP 101/static profile alone are structurally insufficient
+PASS  11  Core Hooks are a closed deny/report layer with no deferred authority
+          - six command-Hook events; deny/report only; Future-v2 names have no active Tool/state/authority
+PASS  12  reporting lifecycle is derived from the open register and never self-claims READY
+          - open register derived B=0/M=0/m=0; seven documents project STAGED_FINAL
+PASS  13  every required ref has a declared producer and credential bytes stay outside MCP
+          - 24 exact ref graph rows; 10 role/provenance flows; zero plaintext MCP credential paths
+PASS  14  catalog markers, exact package bytes and closed private-key/runtime scanners match Core-v1
+          - 1 exact Tool marker(s), 1 error marker(s); 9 exact frozen package files scanned as fatal UTF-8 raw-byte-bound text; STAGED_FINAL header, invariant body and all 8 raw covered-byte digests exact; no recognized structured private-key container or durable runtime value; opaque base64 remains a semantic-audit boundary
+PASS  15  clean-host install uses a separate lease and must re-inventory/replan before dependents
+          - NODE_INSTALL_P3 cursor completion gates fresh inventories, recompile and a non-inherited NODE_P2 approval
+PASS  16  resolver-derived install/NODE plans, cursor and finite-inventory refresh are closed
+          - resolver-derived install/NODE/BBR/rollback templates; cursor exact; active PT15M/PT10M refresh preserves only no-drift plans
+PASS  17  rollback coverage, executor exclusivity and credential ownership are closed
+          - 8 main external mutators derive eight reverse-order nodes; 11 fixed reconciliation observers; prefix replay forbidden
+PASS  18  XUI broker composites and issuer-specific origin trust are exact
+          - existing and same-run XUI credentials use fixed composites; public and Origin-CA trust paths remain distinct and verified
+PASS  19  success predicates and BBR/main ordering cannot certify stale or false evidence
+          - all success booleans are const true; BBR resolves before main seal and invalidates every post-change E2E predicate
+
+=== mutation controls ===
+PASS  SCOPE-1      reject a deferred Tool or reordered active catalog
+PASS  SCOPE-2      reject a deferred capability marked active in README
+PASS  SCHEMA-1     reject an open public schema or wrong output discriminator
+PASS  STATE-1      reject an unknown active state and a missing success mapping
+PASS  POLICY-1     reject a dead error and an open success-origin map
+PASS  BOUNDARY-1   reject an arbitrary helper and a plaintext broker result
+PASS  INSTALL-1    reject an installer URL/command and existing-host eligibility
+PASS  DOMAIN-1     reject hostname drift and panel-hostname reuse
+PASS  BBR-1        reject kernel/reboot authority and shared sysctl edits
+PASS  ROLLBACK-1   reject Cloudflare overwrite and caller-selected rollback rows
+PASS  E2E-1        reject false E2E from HTTP 101 or unauthenticated traffic
+PASS  HOOK-1       reject a Hook that approves or reactivates a deferred Tool
+PASS  REPORT-1     reject partial status conversion and package-local READY
+PASS  REPORT-2     lock exact candidate register identity, content, order and derived summary
+PASS  REPORT-3     accept only a complete eight-entry staged-final package transaction
+PASS  REPORT-4     reject staged-final phase, prose, checkbox, history and digest residue
+PASS  REF-1        reject an unproven required ref and plaintext credential flow
+PASS  PACKAGE-1    reject catalog drift, non-text bytes and recognized private-key containers
+PASS  INSTALL-2    reject a single widened install/dependent lease and post-install deadlock
+PASS  SUBPLAN-1    reject a deadlocked NODE subplan, cursor skip or lease widening
+PASS  XUI-OBS-1    reject contradictory or detached XUI inventory observation cases
+PASS  ROLLBACK-2   reject a missing rollback node, BBR executor overlap and imported-secret deletion
+PASS  RECONCILE-1  reject reconciliation selector, observer, outcome and proof drift
+PASS  RECOVERY-1   reject non-contiguous rollback resume or completed inverse replay
+PASS  BBR-AUTH-1   reject BBR rollback source, baseline or finalization confusion
+PASS  BOUNDARY-2   reject generic XUI authority and insecure origin TLS trust
+PASS  E2E-2        reject false upstream success and BBR after main sealing
+PASS  HARNESS-1    preserve canonical Tool aliases inside every isolated mutation clone
+PASS  HARNESS-2    reject empty, missing or aliased trajectory and attack matrices
+
+=== forward trajectories ===
+PASS  audit-no-write-close — audit inventory/protected-line only -> immutable audit report -> CLOSED; no BBR close
+PASS  protected-line-early-pre-route-proof — protected-line broker proof NEW -> INVENTORIED before any plan or mutation
+PASS  existing-xui-safe-reuse-configure — resolver NODE_P2 reuse template -> no certificate write -> receipt-bound BBR close -> accepted
+PASS  existing-xui-origin-ca-configure — resolver NODE_P2 Origin-CA template + pinned trust -> authenticated E2E -> CLOSED
+PASS  clean-host-install-origin-ca-configure — NODE_INSTALL_P3 -> fresh inventories -> fresh NODE_P2 -> Origin CA -> CLOSED
+PASS  active-node-no-drift-refresh-preserves-cursor — PT15M/PT10M refresh at APPROVED preserves exact template/cursor/approval and never extends lease
+PASS  active-node-zero-commit-drift-rebases — active drift before any commit -> INVENTORIED -> fresh plan + new host prompt
+PASS  active-node-owned-commit-drift-enters-rollback — owned committed drift -> current recovery obligation -> fresh rollback prompt -> ROLLING_BACK
+PASS  main-approved-expiry-recompile-reauthorize — APPROVED evidence expiry -> invalidate old plan/challenge/lease -> fresh compile -> new prompt
+PASS  active-cursor-zero-commit-expiry-replans — predispatch lease expiry with zero commits -> revoke cursor -> INVENTORIED -> fresh plan and prompt
+PASS  active-cursor-owned-commit-expiry-enters-rollback — predispatch lease expiry after owned commit -> atomic recovery obligation -> fresh rollback prompt
+PASS  bbr-not-requested-close-before-main-seal — BBR_NOT_REQUESTED -> explicit BBR_CLOSED_NOT_REQUESTED_RECEIPT -> main E2E seal
+PASS  configure-bbr-refresh-before-seal — HOST-approved no-drift inventory refresh -> BBR apply/verify -> post-BBR E2E refresh -> receipt close
+PASS  bbr-verify-failure-dedicated-rollback-close — known bbr_verify false -> fresh dedicated rollback prompt -> inverse/readback -> post-probes -> partial close
+PASS  bbr-reconciled-baseline-zero-stage-reauthorize — reconciled apply receipt -> rollback authorize -> zero-stage expiry inherits exact-one baseline -> fresh authorize
+PASS  bbr-finalization-both-or-neither — pre-commit crash exposes at most a 3-stage prefix; commit exposes final stage and aggregate together
+PASS  main-first-write-proven-not-committed-abandon — first main write response loss -> fresh reconcile proves no commit/zero prior -> abandoned residual close
+PASS  bbr-apply-proven-not-committed-no-write-close — bbr_apply response loss -> prove no commit/no receipt -> BBR no-write partial receipt
+PASS  main-owned-rollback-post-proof-partial — known owned commit -> fresh rollback prompt -> rb01 -> receipt-bound old-line -> BBR resolution -> partial close
+PASS  main-rollback-finalization-both-or-neither — pre-commit crash -> neither receipt + fixed reconcile/no replay; committed pair -> PROVEN_COMMITTED -> ROLLED_BACK -> old-line proof
+PASS  main-rollback-zero-dispatch-expiry-reauthorize — expired rollback before rb01 -> durable zero-dispatch admission -> fresh plan/prompt -> ROLLING_BACK
+PASS  main-rollback-prefix-resume-no-replay — nonempty contiguous atomic-stage prefix -> reconcile -> remaining suffix only -> no replay
+PASS  bbr-rollback-prefix-resume-no-replay — durable BBR stage prefix -> reconcile -> remaining stage suffix only -> no replay
+
+=== attack matrix ===
+BLOCKED  unsafe-installer-payload — caller installer bytes rejected
+BLOCKED  private-key-output — issuer private-key output rejected
+BLOCKED  cloudflare-overwrite-or-proxy-without-ownership — overwrite and unowned proxy paths rejected
+BLOCKED  false-e2e-http101 — HTTP 101 cannot certify authenticated E2E
+BLOCKED  deferred-tool-reentry — deferred ACME Tool rejected from Core-v1 catalog
+BLOCKED  caller-acknowledgement-selector — closure acknowledgement remains live host policy, not caller data
+BLOCKED  rollback-imported-secret-or-unowned-row — imported secrets and unregistered rollback rows are preserved/rejected
+BLOCKED  bbr-after-main-seal — BBR apply cannot occur after report sealing
+BLOCKED  stale-active-cursor-write-resume — expired active cursor cannot resume or inherit plan, cursor, approval, operations or lease
+BLOCKED  rollback-half-visible-final-receipts — final atomic-stage receipt and aggregate rollback receipt remain both-or-neither
+
 OK
 
---- [3] full test suite: npm test ---
-
-> cdn-node-operator-core-v1@0.1.0-phase1 test
-> node --test tests/*.test.cjs
-
-✔ complete audit journey: begin -> inventories -> completion -> close (1120.652958ms)
-✔ audit cannot reach any tool outside the frozen audit allowlist (16.811667ms)
-✔ audit run_begin structurally cannot request BBR (4.666583ms)
-✔ audit output is masked: no observation leaks beyond schema-bound fields (42.484ms)
-✔ unregistered onboarding refs are rejected at run_begin (4.633125ms)
-✔ configure minimal closed loop: plan -> lease -> cursor -> owned mutation (1154.83325ms)
-✔ challenge replay and impact-digest drift are rejected (9.151791ms)
-✔ zero-commit lease expiry revokes old authority and returns to INVENTORIED (8.375416ms)
-✔ BBR branch minimal loop: pending -> inventoried -> closed receipt gates main close (11.512667ms)
-✔ configure completion stays honestly pending in this build (9.756833ms)
-✔ frozen spec digest matches the external lock record (0.817875ms)
-✔ vendored contract modules are byte-equal to a fresh re-extraction (1.59925ms)
-✔ tools/list equals the frozen ordered 31-tool catalog (37.360625ms)
-✔ plugin manifest and single-server .mcp.json load and agree (0.409667ms)
-✔ unknown field, null, bad enum, and broken conditional are rejected pre-handler (1080.88025ms)
-✔ valid input reaches the handler exactly once (8.027667ms)
-✔ ledger opens in WAL journal mode (5.016375ms)
-✔ transactions are atomic: a throwing transaction leaves no partial writes (6.724875ms)
-✔ idempotency: exact replay is no_op with the original binding; drifted input conflicts (1106.412083ms)
-✔ recovery: reopening the same data dir preserves runs, chain digests, and evidence (4.93375ms)
-✔ phase writes extend the hash chain deterministically (4.926125ms)
-✔ evidence TTL: stale evidence stops satisfying completion (21.921375ms)
-✔ expected_ledger_digest drift is rejected as BASELINE_DRIFT (6.138667ms)
-✔ install -> update -> explicit rollback -> uninstall lifecycle (10.631958ms)
-✔ interrupted update staging residue is recovered (6.815625ms)
-✔ doctor passes on a fresh install in a temp runtime root (1135.673375ms)
-✔ stdio server loads the single cdn-node config and serves the frozen catalog (652.856125ms)
-✔ all 93 schemas compile under strict Ajv 2020-12 (2.0895ms)
-✔ run_begin: positive input/data/output instances validate (2.789583ms)
-✔ run_begin: unknown fields are rejected on every closed object (0.19825ms)
-✔ run_begin: null in a non-nullable required field is rejected (0.124834ms)
-✔ run_begin: out-of-enum values are rejected (0.118917ms)
-✔ run_begin: output error conditional (error implies null data) (0.06625ms)
-✔ run_status: positive input/data/output instances validate (2.284334ms)
-✔ run_status: unknown fields are rejected on every closed object (0.075208ms)
-✔ run_status: null in a non-nullable required field is rejected (0.078458ms)
-✔ run_status: out-of-enum values are rejected (0.087875ms)
-✔ run_status: output error conditional (error implies null data) (0.05025ms)
-✔ reconcile_status: positive input/data/output instances validate (19.750375ms)
-✔ reconcile_status: unknown fields are rejected on every closed object (0.265375ms)
-✔ reconcile_status: null in a non-nullable required field is rejected (0.052792ms)
-✔ reconcile_status: out-of-enum values are rejected (0.168833ms)
-✔ reconcile_status: output error conditional (error implies null data) (0.145583ms)
-✔ plan_compile: positive input/data/output instances validate (3.656625ms)
-✔ plan_compile: unknown fields are rejected on every closed object (0.256917ms)
-✔ plan_compile: null in a non-nullable required field is rejected (0.067375ms)
-✔ plan_compile: out-of-enum values are rejected (0.141458ms)
-✔ plan_compile: output error conditional (error implies null data) (0.112042ms)
-✔ plan_authorize: positive input/data/output instances validate (2.380292ms)
-✔ plan_authorize: unknown fields are rejected on every closed object (0.119583ms)
-✔ plan_authorize: null in a non-nullable required field is rejected (0.034916ms)
-✔ plan_authorize: out-of-enum values are rejected (0.044292ms)
-✔ plan_authorize: output error conditional (error implies null data) (0.030042ms)
-✔ evidence_list: positive input/data/output instances validate (57.814917ms)
-✔ evidence_list: unknown fields are rejected on every closed object (0.186166ms)
-✔ evidence_list: null in a non-nullable required field is rejected (0.030625ms)
-✔ evidence_list: out-of-enum values are rejected (0.097417ms)
-✔ evidence_list: output error conditional (error implies null data) (0.083583ms)
-✔ completion_evaluate: positive input/data/output instances validate (2.175917ms)
-✔ completion_evaluate: unknown fields are rejected on every closed object (0.071667ms)
-✔ completion_evaluate: null in a non-nullable required field is rejected (0.020584ms)
-✔ completion_evaluate: out-of-enum values are rejected (0.045333ms)
-✔ completion_evaluate: output error conditional (error implies null data) (0.054083ms)
-✔ run_close: positive input/data/output instances validate (1.794042ms)
-✔ run_close: unknown fields are rejected on every closed object (0.099917ms)
-✔ run_close: null in a non-nullable required field is rejected (0.030792ms)
-✔ run_close: out-of-enum values are rejected (0.056459ms)
-✔ run_close: output error conditional (error implies null data) (0.042875ms)
-✔ rollback_run: positive input/data/output instances validate (2.869334ms)
-✔ rollback_run: unknown fields are rejected on every closed object (0.150875ms)
-✔ rollback_run: null in a non-nullable required field is rejected (0.039916ms)
-✔ rollback_run: out-of-enum values are rejected (0.071458ms)
-✔ rollback_run: output error conditional (error implies null data) (0.062959ms)
-✔ origin_inventory: positive input/data/output instances validate (3.776167ms)
-✔ origin_inventory: unknown fields are rejected on every closed object (0.341625ms)
-✔ origin_inventory: null in a non-nullable required field is rejected (0.233125ms)
-✔ origin_inventory: out-of-enum values are rejected (0.405875ms)
-✔ origin_inventory: output error conditional (error implies null data) (0.122833ms)
-✔ cloudflare_inventory: positive input/data/output instances validate (3.3815ms)
-✔ cloudflare_inventory: unknown fields are rejected on every closed object (0.106417ms)
-✔ cloudflare_inventory: null in a non-nullable required field is rejected (0.023875ms)
-✔ cloudflare_inventory: out-of-enum values are rejected (0.054291ms)
-✔ cloudflare_inventory: output error conditional (error implies null data) (0.048375ms)
-✔ xui_inventory: positive input/data/output instances validate (6.422791ms)
-✔ xui_inventory: unknown fields are rejected on every closed object (0.118084ms)
-✔ xui_inventory: null in a non-nullable required field is rejected (0.022792ms)
-✔ xui_inventory: out-of-enum values are rejected (0.049709ms)
-✔ xui_inventory: output error conditional (error implies null data) (0.042459ms)
-✔ client_inventory: positive input/data/output instances validate (1.192292ms)
-✔ client_inventory: unknown fields are rejected on every closed object (0.058208ms)
-✔ client_inventory: null in a non-nullable required field is rejected (0.0425ms)
-✔ client_inventory: out-of-enum values are rejected (0.029959ms)
-✔ client_inventory: output error conditional (error implies null data) (0.056083ms)
-✔ old_line_verify: positive input/data/output instances validate (1.626458ms)
-✔ old_line_verify: unknown fields are rejected on every closed object (0.080792ms)
-✔ old_line_verify: null in a non-nullable required field is rejected (0.036166ms)
-✔ old_line_verify: out-of-enum values are rejected (0.051959ms)
-✔ old_line_verify: output error conditional (error implies null data) (0.0425ms)
-✔ xui_install: positive input/data/output instances validate (1.70325ms)
-✔ xui_install: unknown fields are rejected on every closed object (0.083167ms)
-✔ xui_install: null in a non-nullable required field is rejected (0.061542ms)
-✔ xui_install: out-of-enum values are rejected (0.041791ms)
-✔ xui_install: output error conditional (error implies null data) (0.037ms)
-✔ xui_create_inbound: positive input/data/output instances validate (2.254667ms)
-✔ xui_create_inbound: unknown fields are rejected on every closed object (0.086292ms)
-✔ xui_create_inbound: null in a non-nullable required field is rejected (0.024667ms)
-✔ xui_create_inbound: out-of-enum values are rejected (0.0435ms)
-✔ xui_create_inbound: output error conditional (error implies null data) (0.036333ms)
-✔ xui_profile_publish: positive input/data/output instances validate (1.537ms)
-✔ xui_profile_publish: unknown fields are rejected on every closed object (0.080333ms)
-✔ xui_profile_publish: null in a non-nullable required field is rejected (0.026708ms)
-✔ xui_profile_publish: out-of-enum values are rejected (0.045292ms)
-✔ xui_profile_publish: output error conditional (error implies null data) (0.058166ms)
-✔ xui_profile_inspect: positive input/data/output instances validate (1.0545ms)
-✔ xui_profile_inspect: unknown fields are rejected on every closed object (0.076791ms)
-✔ xui_profile_inspect: null in a non-nullable required field is rejected (0.030333ms)
-✔ xui_profile_inspect: out-of-enum values are rejected (0.035875ms)
-✔ xui_profile_inspect: output error conditional (error implies null data) (0.03ms)
-✔ certificate_issue_origin_ca: positive input/data/output instances validate (1.480416ms)
-✔ certificate_issue_origin_ca: unknown fields are rejected on every closed object (0.087333ms)
-✔ certificate_issue_origin_ca: null in a non-nullable required field is rejected (0.024333ms)
-✔ certificate_issue_origin_ca: out-of-enum values are rejected (0.041166ms)
-✔ certificate_issue_origin_ca: output error conditional (error implies null data) (0.035583ms)
-✔ certificate_deploy: positive input/data/output instances validate (1.864583ms)
-✔ certificate_deploy: unknown fields are rejected on every closed object (0.090417ms)
-✔ certificate_deploy: null in a non-nullable required field is rejected (0.0255ms)
-✔ certificate_deploy: out-of-enum values are rejected (0.044583ms)
-✔ certificate_deploy: output error conditional (error implies null data) (0.035958ms)
-✔ nginx_route_apply: positive input/data/output instances validate (1.962583ms)
-✔ nginx_route_apply: unknown fields are rejected on every closed object (0.102708ms)
-✔ nginx_route_apply: null in a non-nullable required field is rejected (0.028709ms)
-✔ nginx_route_apply: out-of-enum values are rejected (0.054042ms)
-✔ nginx_route_apply: output error conditional (error implies null data) (0.044958ms)
-✔ origin_verify: positive input/data/output instances validate (0.77575ms)
-✔ origin_verify: unknown fields are rejected on every closed object (0.052625ms)
-✔ origin_verify: null in a non-nullable required field is rejected (0.021ms)
-✔ origin_verify: out-of-enum values are rejected (0.026458ms)
-✔ origin_verify: output error conditional (error implies null data) (0.022459ms)
-✔ cf_node_record_apply: positive input/data/output instances validate (1.42975ms)
-✔ cf_node_record_apply: unknown fields are rejected on every closed object (0.221666ms)
-✔ cf_node_record_apply: null in a non-nullable required field is rejected (0.061167ms)
-✔ cf_node_record_apply: out-of-enum values are rejected (0.108917ms)
-✔ cf_node_record_apply: output error conditional (error implies null data) (0.07825ms)
-✔ cf_proxy_enable: positive input/data/output instances validate (2.097333ms)
-✔ cf_proxy_enable: unknown fields are rejected on every closed object (0.07175ms)
-✔ cf_proxy_enable: null in a non-nullable required field is rejected (0.029916ms)
-✔ cf_proxy_enable: out-of-enum values are rejected (0.034083ms)
-✔ cf_proxy_enable: output error conditional (error implies null data) (0.027875ms)
-✔ cdn_verify: positive input/data/output instances validate (1.568541ms)
-✔ cdn_verify: unknown fields are rejected on every closed object (0.069458ms)
-✔ cdn_verify: null in a non-nullable required field is rejected (0.025708ms)
-✔ cdn_verify: out-of-enum values are rejected (0.035375ms)
-✔ cdn_verify: output error conditional (error implies null data) (0.029333ms)
-✔ traffic_verify: positive input/data/output instances validate (1.286666ms)
-✔ traffic_verify: unknown fields are rejected on every closed object (0.048209ms)
-✔ traffic_verify: null in a non-nullable required field is rejected (0.01875ms)
-✔ traffic_verify: out-of-enum values are rejected (0.029875ms)
-✔ traffic_verify: output error conditional (error implies null data) (0.025834ms)
-✔ logs_correlate: positive input/data/output instances validate (1.080209ms)
-✔ logs_correlate: unknown fields are rejected on every closed object (0.058042ms)
-✔ logs_correlate: null in a non-nullable required field is rejected (0.027417ms)
-✔ logs_correlate: out-of-enum values are rejected (0.03325ms)
-✔ logs_correlate: output error conditional (error implies null data) (0.02375ms)
-✔ bbr_inventory: positive input/data/output instances validate (0.993541ms)
-✔ bbr_inventory: unknown fields are rejected on every closed object (0.051167ms)
-✔ bbr_inventory: null in a non-nullable required field is rejected (0.019625ms)
-✔ bbr_inventory: out-of-enum values are rejected (0.030625ms)
-✔ bbr_inventory: output error conditional (error implies null data) (0.027334ms)
-✔ bbr_apply: positive input/data/output instances validate (1.699125ms)
-✔ bbr_apply: unknown fields are rejected on every closed object (0.077958ms)
-✔ bbr_apply: null in a non-nullable required field is rejected (0.021542ms)
-✔ bbr_apply: out-of-enum values are rejected (0.052833ms)
-✔ bbr_apply: output error conditional (error implies null data) (0.051417ms)
-✔ bbr_verify: positive input/data/output instances validate (2.131958ms)
-✔ bbr_verify: unknown fields are rejected on every closed object (0.062666ms)
-✔ bbr_verify: null in a non-nullable required field is rejected (0.020042ms)
-✔ bbr_verify: out-of-enum values are rejected (0.028625ms)
-✔ bbr_verify: output error conditional (error implies null data) (0.026125ms)
-✔ bbr_rollback: positive input/data/output instances validate (1.370458ms)
-✔ bbr_rollback: unknown fields are rejected on every closed object (0.0585ms)
-✔ bbr_rollback: null in a non-nullable required field is rejected (0.019875ms)
-✔ bbr_rollback: out-of-enum values are rejected (0.037875ms)
-✔ bbr_rollback: output error conditional (error implies null data) (0.031667ms)
-✔ run_begin conditional: audit mode cannot request BBR (0.056542ms)
-✔ run_begin conditional: protected-line pair must be both-null or both-set (0.046416ms)
-✔ run_close data conditional: audit_complete close binds the report (0.085583ms)
-✔ completion_evaluate data conditional: labels bind status and report shape (0.137875ms)
-✔ old_line_verify data conditional: pre_change forbids route/receipt bindings (0.05325ms)
-✔ xui_inventory data conditional: case projection is enforced (0.061959ms)
-✔ production import registry is closed: builtins, ajv, and relative modules only (2.878959ms)
-✔ no shell, spawn, eval, dynamic import, or network surface in production code (4.538375ms)
-✔ no plaintext secret, private-key container, or credential material in durable bytes (3.382583ms)
-✔ no real deployment value: public IPs, real-looking hostnames, or home paths (5.269209ms)
-✔ no active Future-v2 entry point in production or config bytes (5.557292ms)
-✔ dependency set is exactly ajv (0.416625ms)
-✔ mutating adapter operations are exactly the contract's closed set (10.907083ms)
-ℹ tests 196
+--- [3] full test suite ---
+(node:86303) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ complete audit journey: begin -> inventories -> completion -> close (1459.444792ms)
+✔ audit cannot reach any tool outside the frozen audit allowlist (22.982292ms)
+✔ audit run_begin structurally cannot request BBR (15.253375ms)
+✔ audit output is masked: no observation leaks beyond schema-bound fields (73.087292ms)
+✔ unregistered onboarding refs are rejected at run_begin (24.43175ms)
+(node:86304) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ BBR applies one exclusive owned drop-in and verifies live and persistent state (1769.185792ms)
+✔ BBR structurally cannot install a kernel, edit a bootloader, or reboot (0.845708ms)
+✔ a kernel without BBR denies the BBR plan before any lease or write (100.311709ms)
+✔ a kernel without fq denies the BBR plan before any lease or write (72.282625ms)
+✔ a persistent sysctl conflict denies the BBR plan before any lease or write (77.24725ms)
+✔ an existing owned drop-in denies the BBR plan before any lease or write (53.559375ms)
+✔ HOST_P3 exact no-drift refresh preserves plan, cursor, approval and both expiries (96.144583ms)
+✔ HOST_P3 drift invalidates authority and returns to BBR_PLAN_READY (76.780333ms)
+✔ HOST_P3 lease expiry replans instead of resuming forward (64.911875ms)
+✔ BBR cannot be applied before the main line is delivered (18.570875ms)
+✔ BBR cannot be applied after the main report is sealed (59.8025ms)
+✔ the BBR branch cannot close until post-apply evidence is re-proven (51.479291ms)
+✔ a conclusively false BBR verification authorizes the dedicated rollback (43.860334ms)
+✔ a run that never requested BBR still needs an explicit closed receipt (41.611125ms)
+(node:86305) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ generated credentials follow the frozen CSPRNG policy exactly (1.40675ms)
+✔ the broker never returns plaintext and the keychain never serializes it (0.673958ms)
+✔ generated values are unique within a scope (0.413333ms)
+✔ a full install+configure run leaks no secret into MCP, ledger, or events (1610.260333ms)
+✔ a broker that returns private-key bytes is rejected, not redacted (170.298291ms)
+✔ secret refs are role-scoped: a wrong-role ref is refused (38.808125ms)
+(node:86306) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ configure minimal closed loop: plan -> lease -> cursor -> owned mutation (1500.153042ms)
+✔ an unavailable downstream adapter fails closed with no cursor advance (33.347ms)
+✔ challenge replay and impact-digest drift are rejected (28.28025ms)
+✔ zero-commit lease expiry revokes old authority and returns to INVENTORIED (42.621292ms)
+✔ BBR branch minimal loop: pending -> inventoried -> closed receipt gates main close (54.3825ms)
+✔ configure completion is barred before the BBR branch closes, then honestly pending (36.286083ms)
+(node:86307) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ frozen spec digest matches the external lock record (0.81175ms)
+✔ vendored contract modules are byte-equal to a fresh re-extraction (1.619542ms)
+✔ tools/list equals the frozen ordered 31-tool catalog (38.074ms)
+✔ plugin manifest and single-server .mcp.json load and agree (0.444417ms)
+(node:86308) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ unknown field, null, bad enum, and broken conditional are rejected pre-handler (1375.946833ms)
+✔ valid input reaches the handler exactly once (22.347625ms)
+(node:86309) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a complete journey seals end_to_end_verified with all seven requirements (1651.122ms)
+✔ traffic that is not authenticated fails: TLS and 101 alone are not E2E (101.32925ms)
+✔ egress that does not match the origin's own expected egress fails (87.836833ms)
+✔ the egress comparison is opaque: no raw address reaches MCP (80.657833ms)
+✔ a raw address offered by an adapter is refused, not forwarded (65.60525ms)
+✔ cross-domain egress digests are never compared (0.286167ms)
+✔ a public resolution equal to the origin is not a fronted CDN (49.195208ms)
+✔ uncorrelated logs block completion (55.0135ms)
+✔ an unhealthy protected line blocks the final proof and completion (60.121958ms)
+✔ main accepted close is refused without a sealed end_to_end_verified report (78.309875ms)
+✔ completion is refused while the configure BBR branch is unresolved (65.987542ms)
+✔ audit runs are exempt from the configure-only BBR barrier (17.334ms)
+(node:86310) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ clean-host install: fixed digest-pinned adapter, owned receipt, loopback panel (1502.056875ms)
+✔ install caller input carries no command, path, credential, or port selector (0.328417ms)
+✔ install denies COMPATIBLE_EXISTING_WITH_IMPORTED_ADMIN before any effect (25.351958ms)
+✔ install denies INCOMPATIBLE_EXISTING before any effect (22.127375ms)
+✔ install denies AMBIGUOUS_OR_DRIFTED before any effect (32.235125ms)
+✔ install denies SAME_RUN_OWNERSHIP_DRIFTED before any effect (24.475875ms)
+✔ install denies ABSENT_NOT_INSTALL_ELIGIBLE before any effect (35.275792ms)
+✔ install denies MISSING_REQUIRED_ADMIN_SECRET before any effect (22.842084ms)
+✔ an unsupported host family has no eligible pinned adapter and never installs (30.198375ms)
+✔ an install readback outside the pinned allowlist is rejected as untrusted (29.872708ms)
+✔ the dependent node plan requires a fresh install-bound protected-line proof (32.404625ms)
+✔ a dependent plan is refused while a recovery obligation is open (39.577ms)
+✔ the panel credential is minted by the registered broker operation, not the installer (30.145875ms)
+✔ an unavailable credential broker aborts the install without an ownership receipt (29.551375ms)
+(node:86311) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ ledger opens in WAL journal mode (25.199667ms)
+✔ transactions are atomic: a throwing transaction leaves no partial writes (5.3815ms)
+✔ idempotency: exact replay is no_op with the original binding; drifted input conflicts (1357.393458ms)
+✔ recovery: reopening the same data dir preserves runs, chain digests, and evidence (7.942625ms)
+✔ phase writes extend the hash chain deterministically (5.71875ms)
+✔ evidence TTL: stale evidence stops satisfying completion (47.685625ms)
+✔ expected_ledger_digest drift is rejected as BASELINE_DRIFT (16.4365ms)
+(node:86312) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ install -> update -> explicit rollback -> uninstall lifecycle (5.801ms)
+✔ interrupted update staging residue is recovered (2.325333ms)
+✔ doctor passes on a fresh install in a temp runtime root (1425.450333ms)
+✔ stdio server loads the single cdn-node config and serves the frozen catalog (1228.457167ms)
+(node:86313) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ no caller-supplied command, URL, path, script, or payload reaches any adapter (0.47725ms)
+✔ the adapter registry admits no operation outside the frozen catalog (0.211583ms)
+✔ a tool that is not a registered caller cannot invoke an operation (1117.180042ms)
+✔ audit runs cannot reach any mutator, plan, lease, or BBR path (31.92775ms)
+✔ an audit run structurally cannot request BBR (12.158208ms)
+✔ no deferred Future-v2 capability exists in the catalog or the runtime (0.248625ms)
+✔ production code has no shell, spawn, eval, dynamic import, or network surface (3.302375ms)
+✔ the scanner exclusion set is exactly the two scanner files (0.080542ms)
+✔ no durable byte contains a private-key container or a real deployment value (2.123042ms)
+✔ closure acknowledgement is a server-recorded host prompt, not caller data (18.360875ms)
+✔ a mutator cannot dispatch without the exact current approved step (19.493875ms)
+✔ every mutating adapter call is bound to a plan, approval, lease, and receipt (59.215875ms)
+✔ an error envelope never carries an unmasked upstream detail (31.632083ms)
+(node:86316) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the node journey binds one hostname across record, SAN, server_name, and client (1250.082667ms)
+✔ the inbound is loopback-only plain WebSocket with a frozen CSPRNG path (21.769959ms)
+✔ the client profile is created no-clobber at mode 0600 with a residual disclosure (24.426625ms)
+✔ a reuse-eligible certificate is reused with no certificate write (49.277791ms)
+✔ a certificate too close to expiry is not reused: Origin CA takes over (15.355083ms)
+✔ no safe reuse and no Origin CA eligibility denies before any plan or lease (21.698208ms)
+✔ a slot occupied between issuance and deploy revokes authority before any write (79.281125ms)
+✔ the deploy preflight itself refuses a slot that is not absent and root-owned (83.6495ms)
+✔ zone mode off denies before any plan, lease, or write (23.086667ms)
+✔ zone mode flexible denies before any plan, lease, or write (22.073167ms)
+✔ zone mode full denies before any plan, lease, or write (22.186042ms)
+✔ zone mode unknown denies before any plan, lease, or write (21.948333ms)
+✔ disabled WebSockets deny before any plan, lease, or write (18.36275ms)
+✔ Core-v1 performs no zone-wide Cloudflare setting write (0.361041ms)
+✔ a FOREIGN_OR_STALE record is never overwritten or adopted (13.080209ms)
+✔ a AMBIGUOUS_MULTIPLE record is never overwritten or adopted (14.232166ms)
+✔ the record is created unproxied and the proxy waits for the origin proof (36.260208ms)
+✔ a failed direct-origin probe blocks the proxy and never fabricates a proof (30.505ms)
+✔ nginx is never installed and a non-supported nginx denies the route (24.977167ms)
+✔ an occupied include slot or a name/path conflict denies the route (65.876375ms)
+✔ a concurrent third-party digest stops a create-only write without clobbering (26.482625ms)
+✔ the zone apex can never be registered as the node hostname (10.074791ms)
+✔ the management hostname can never be registered as the node hostname (12.4915ms)
+✔ an ambiguous name can never be registered as the node hostname (19.257916ms)
+✔ an unregistered dedicated name can never be registered as the node hostname (13.997125ms)
+✔ a node hostname outside the registered zone is refused (9.572834ms)
+✔ a client field that names a different hostname is rejected (34.590583ms)
+✔ a client websocket path that differs from the created inbound is rejected (41.383417ms)
+(node:86317) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ forward resume is structurally impossible after a write expiry (1.340084ms)
+✔ zero committed changes: expiry revokes everything and returns to INVENTORIED (1197.692166ms)
+✔ owned committed changes: expiry creates a recovery obligation and ROLLBACK_REQUIRED (34.001042ms)
+✔ an unknown commit at expiry goes to manual with a reconciliation obligation (33.645916ms)
+✔ a checkpoint refresh with no drift preserves plan, cursor, and approval (27.661375ms)
+✔ a checkpoint that observes third-party drift goes to manual without overwriting (23.512ms)
+✔ reconciliation reports STILL_UNKNOWN and stays manual when it cannot prove anything (31.581875ms)
+✔ reconciliation of a proven-committed main rollback projects ROLLED_BACK (74.146209ms)
+✔ a concurrent third digest during reconciliation never overwrites (39.742041ms)
+✔ reconcile_status requires exactly one open obligation (24.706125ms)
+(node:86318) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the frozen graph is eleven ordered main stages and four ordered BBR stages (0.958958ms)
+✔ main rollback reverses only same-run owned resources, in dependency-reverse order (1158.233334ms)
+✔ an install run also reverses the install and the generated panel admin (80.463583ms)
+✔ an imported panel administrator credential is never revoked (51.982458ms)
+✔ a third-party digest stops the rollback at that stage without clobbering (86.463458ms)
+✔ a proven prefix resumes from its exact remaining suffix and never replays (81.986791ms)
+✔ a non-contiguous stage receipt set is refused into manual, not resumed (48.556709ms)
+✔ main zero-dispatch lease expiry mints an admission receipt and replans in full (77.42175ms)
+✔ main rollback is denied while a committed BBR change is still raw (65.458167ms)
+✔ BBR rollback runs the four frozen stages with per-stage receipts (73.339417ms)
+✔ BBR zero-stage lease expiry supersedes the episode and inherits one baseline (55.609625ms)
+✔ more than one current BBR source episode denies the plan and stays manual (42.028084ms)
+✔ a stage whose readback cannot be verified stops before the aggregate receipt (36.523375ms)
+✔ the post-rollback old-line proof binds the aggregate receipt and re-runs no inverse (38.138833ms)
+✔ rollback_run exposes no caller operation selector at all (0.052208ms)
+✔ all 93 schemas compile under strict Ajv 2020-12 (0.817209ms)
+✔ run_begin: positive input/data/output instances validate (2.174959ms)
+✔ run_begin: unknown fields are rejected on every closed object (0.149625ms)
+✔ run_begin: null in a non-nullable required field is rejected (0.130833ms)
+✔ run_begin: out-of-enum values are rejected (0.131333ms)
+✔ run_begin: output error conditional (error implies null data) (0.070333ms)
+✔ run_status: positive input/data/output instances validate (1.286041ms)
+✔ run_status: unknown fields are rejected on every closed object (0.106042ms)
+✔ run_status: null in a non-nullable required field is rejected (0.056625ms)
+✔ run_status: out-of-enum values are rejected (0.123708ms)
+✔ run_status: output error conditional (error implies null data) (0.061417ms)
+✔ reconcile_status: positive input/data/output instances validate (15.857709ms)
+✔ reconcile_status: unknown fields are rejected on every closed object (0.297292ms)
+✔ reconcile_status: null in a non-nullable required field is rejected (0.049167ms)
+✔ reconcile_status: out-of-enum values are rejected (0.143542ms)
+✔ reconcile_status: output error conditional (error implies null data) (0.130875ms)
+✔ plan_compile: positive input/data/output instances validate (2.268959ms)
+✔ plan_compile: unknown fields are rejected on every closed object (0.140167ms)
+✔ plan_compile: null in a non-nullable required field is rejected (0.025042ms)
+✔ plan_compile: out-of-enum values are rejected (0.058041ms)
+✔ plan_compile: output error conditional (error implies null data) (0.046292ms)
+✔ plan_authorize: positive input/data/output instances validate (0.77525ms)
+✔ plan_authorize: unknown fields are rejected on every closed object (0.036083ms)
+✔ plan_authorize: null in a non-nullable required field is rejected (0.019958ms)
+✔ plan_authorize: out-of-enum values are rejected (0.028375ms)
+✔ plan_authorize: output error conditional (error implies null data) (0.023083ms)
+✔ evidence_list: positive input/data/output instances validate (40.852791ms)
+✔ evidence_list: unknown fields are rejected on every closed object (0.181916ms)
+✔ evidence_list: null in a non-nullable required field is rejected (0.027792ms)
+✔ evidence_list: out-of-enum values are rejected (0.090083ms)
+✔ evidence_list: output error conditional (error implies null data) (0.076208ms)
+✔ completion_evaluate: positive input/data/output instances validate (2.08475ms)
+✔ completion_evaluate: unknown fields are rejected on every closed object (0.081417ms)
+✔ completion_evaluate: null in a non-nullable required field is rejected (0.022917ms)
+✔ completion_evaluate: out-of-enum values are rejected (0.046292ms)
+✔ completion_evaluate: output error conditional (error implies null data) (0.052958ms)
+✔ run_close: positive input/data/output instances validate (1.641ms)
+✔ run_close: unknown fields are rejected on every closed object (0.056791ms)
+✔ run_close: null in a non-nullable required field is rejected (0.02075ms)
+✔ run_close: out-of-enum values are rejected (0.044ms)
+✔ run_close: output error conditional (error implies null data) (0.035209ms)
+✔ rollback_run: positive input/data/output instances validate (2.534042ms)
+✔ rollback_run: unknown fields are rejected on every closed object (0.102875ms)
+✔ rollback_run: null in a non-nullable required field is rejected (0.030125ms)
+✔ rollback_run: out-of-enum values are rejected (0.056875ms)
+✔ rollback_run: output error conditional (error implies null data) (0.053ms)
+✔ origin_inventory: positive input/data/output instances validate (3.270583ms)
+✔ origin_inventory: unknown fields are rejected on every closed object (0.149667ms)
+✔ origin_inventory: null in a non-nullable required field is rejected (0.056458ms)
+✔ origin_inventory: out-of-enum values are rejected (0.107708ms)
+✔ origin_inventory: output error conditional (error implies null data) (0.137542ms)
+✔ cloudflare_inventory: positive input/data/output instances validate (2.945167ms)
+✔ cloudflare_inventory: unknown fields are rejected on every closed object (0.082958ms)
+✔ cloudflare_inventory: null in a non-nullable required field is rejected (0.019875ms)
+✔ cloudflare_inventory: out-of-enum values are rejected (0.049917ms)
+✔ cloudflare_inventory: output error conditional (error implies null data) (0.045334ms)
+✔ xui_inventory: positive input/data/output instances validate (4.011042ms)
+✔ xui_inventory: unknown fields are rejected on every closed object (0.074166ms)
+✔ xui_inventory: null in a non-nullable required field is rejected (0.019917ms)
+✔ xui_inventory: out-of-enum values are rejected (0.044917ms)
+✔ xui_inventory: output error conditional (error implies null data) (0.039875ms)
+✔ client_inventory: positive input/data/output instances validate (0.738208ms)
+✔ client_inventory: unknown fields are rejected on every closed object (0.04625ms)
+✔ client_inventory: null in a non-nullable required field is rejected (0.03775ms)
+✔ client_inventory: out-of-enum values are rejected (0.027583ms)
+✔ client_inventory: output error conditional (error implies null data) (0.025125ms)
+✔ old_line_verify: positive input/data/output instances validate (2.026458ms)
+✔ old_line_verify: unknown fields are rejected on every closed object (0.086167ms)
+✔ old_line_verify: null in a non-nullable required field is rejected (0.053917ms)
+✔ old_line_verify: out-of-enum values are rejected (0.059625ms)
+✔ old_line_verify: output error conditional (error implies null data) (0.042209ms)
+✔ xui_install: positive input/data/output instances validate (1.245709ms)
+✔ xui_install: unknown fields are rejected on every closed object (0.057875ms)
+✔ xui_install: null in a non-nullable required field is rejected (0.021542ms)
+✔ xui_install: out-of-enum values are rejected (0.035125ms)
+✔ xui_install: output error conditional (error implies null data) (0.029875ms)
+✔ xui_create_inbound: positive input/data/output instances validate (1.800667ms)
+✔ xui_create_inbound: unknown fields are rejected on every closed object (0.074209ms)
+✔ xui_create_inbound: null in a non-nullable required field is rejected (0.023458ms)
+✔ xui_create_inbound: out-of-enum values are rejected (0.044ms)
+✔ xui_create_inbound: output error conditional (error implies null data) (0.037333ms)
+✔ xui_profile_publish: positive input/data/output instances validate (1.36075ms)
+✔ xui_profile_publish: unknown fields are rejected on every closed object (0.059542ms)
+✔ xui_profile_publish: null in a non-nullable required field is rejected (0.021459ms)
+✔ xui_profile_publish: out-of-enum values are rejected (0.033ms)
+✔ xui_profile_publish: output error conditional (error implies null data) (0.035416ms)
+✔ xui_profile_inspect: positive input/data/output instances validate (0.824792ms)
+✔ xui_profile_inspect: unknown fields are rejected on every closed object (0.044375ms)
+✔ xui_profile_inspect: null in a non-nullable required field is rejected (0.0175ms)
+✔ xui_profile_inspect: out-of-enum values are rejected (0.033083ms)
+✔ xui_profile_inspect: output error conditional (error implies null data) (0.030667ms)
+✔ certificate_issue_origin_ca: positive input/data/output instances validate (1.188542ms)
+✔ certificate_issue_origin_ca: unknown fields are rejected on every closed object (0.051833ms)
+✔ certificate_issue_origin_ca: null in a non-nullable required field is rejected (0.016667ms)
+✔ certificate_issue_origin_ca: out-of-enum values are rejected (0.034542ms)
+✔ certificate_issue_origin_ca: output error conditional (error implies null data) (0.030333ms)
+✔ certificate_deploy: positive input/data/output instances validate (1.516583ms)
+✔ certificate_deploy: unknown fields are rejected on every closed object (0.078417ms)
+✔ certificate_deploy: null in a non-nullable required field is rejected (0.023125ms)
+✔ certificate_deploy: out-of-enum values are rejected (0.119584ms)
+✔ certificate_deploy: output error conditional (error implies null data) (0.037916ms)
+✔ nginx_route_apply: positive input/data/output instances validate (1.735292ms)
+✔ nginx_route_apply: unknown fields are rejected on every closed object (0.084042ms)
+✔ nginx_route_apply: null in a non-nullable required field is rejected (0.020834ms)
+✔ nginx_route_apply: out-of-enum values are rejected (0.047708ms)
+✔ nginx_route_apply: output error conditional (error implies null data) (0.039042ms)
+✔ origin_verify: positive input/data/output instances validate (0.832709ms)
+✔ origin_verify: unknown fields are rejected on every closed object (0.061542ms)
+✔ origin_verify: null in a non-nullable required field is rejected (0.022833ms)
+✔ origin_verify: out-of-enum values are rejected (0.028042ms)
+✔ origin_verify: output error conditional (error implies null data) (0.024375ms)
+✔ cf_node_record_apply: positive input/data/output instances validate (1.128416ms)
+✔ cf_node_record_apply: unknown fields are rejected on every closed object (0.057417ms)
+✔ cf_node_record_apply: null in a non-nullable required field is rejected (0.019416ms)
+✔ cf_node_record_apply: out-of-enum values are rejected (0.035625ms)
+✔ cf_node_record_apply: output error conditional (error implies null data) (0.032958ms)
+✔ cf_proxy_enable: positive input/data/output instances validate (0.873041ms)
+✔ cf_proxy_enable: unknown fields are rejected on every closed object (0.036333ms)
+✔ cf_proxy_enable: null in a non-nullable required field is rejected (0.021667ms)
+✔ cf_proxy_enable: out-of-enum values are rejected (0.026584ms)
+✔ cf_proxy_enable: output error conditional (error implies null data) (0.02775ms)
+✔ cdn_verify: positive input/data/output instances validate (0.964792ms)
+✔ cdn_verify: unknown fields are rejected on every closed object (0.043541ms)
+✔ cdn_verify: null in a non-nullable required field is rejected (0.017709ms)
+✔ cdn_verify: out-of-enum values are rejected (0.026041ms)
+✔ cdn_verify: output error conditional (error implies null data) (0.023833ms)
+✔ traffic_verify: positive input/data/output instances validate (1.059208ms)
+✔ traffic_verify: unknown fields are rejected on every closed object (0.051875ms)
+✔ traffic_verify: null in a non-nullable required field is rejected (0.020334ms)
+✔ traffic_verify: out-of-enum values are rejected (0.029208ms)
+✔ traffic_verify: output error conditional (error implies null data) (0.025125ms)
+✔ logs_correlate: positive input/data/output instances validate (1.587167ms)
+✔ logs_correlate: unknown fields are rejected on every closed object (0.118459ms)
+✔ logs_correlate: null in a non-nullable required field is rejected (0.025041ms)
+✔ logs_correlate: out-of-enum values are rejected (0.029208ms)
+✔ logs_correlate: output error conditional (error implies null data) (0.022167ms)
+✔ bbr_inventory: positive input/data/output instances validate (1.860542ms)
+✔ bbr_inventory: unknown fields are rejected on every closed object (0.062333ms)
+✔ bbr_inventory: null in a non-nullable required field is rejected (0.019875ms)
+✔ bbr_inventory: out-of-enum values are rejected (0.032042ms)
+✔ bbr_inventory: output error conditional (error implies null data) (0.031333ms)
+✔ bbr_apply: positive input/data/output instances validate (1.950917ms)
+✔ bbr_apply: unknown fields are rejected on every closed object (0.094541ms)
+✔ bbr_apply: null in a non-nullable required field is rejected (0.024833ms)
+✔ bbr_apply: out-of-enum values are rejected (0.20775ms)
+✔ bbr_apply: output error conditional (error implies null data) (0.049666ms)
+✔ bbr_verify: positive input/data/output instances validate (0.895875ms)
+✔ bbr_verify: unknown fields are rejected on every closed object (0.045708ms)
+✔ bbr_verify: null in a non-nullable required field is rejected (0.018667ms)
+✔ bbr_verify: out-of-enum values are rejected (0.026917ms)
+✔ bbr_verify: output error conditional (error implies null data) (0.025083ms)
+✔ bbr_rollback: positive input/data/output instances validate (1.477ms)
+✔ bbr_rollback: unknown fields are rejected on every closed object (0.067542ms)
+✔ bbr_rollback: null in a non-nullable required field is rejected (0.021375ms)
+✔ bbr_rollback: out-of-enum values are rejected (0.038209ms)
+✔ bbr_rollback: output error conditional (error implies null data) (0.036375ms)
+✔ run_begin conditional: audit mode cannot request BBR (0.05275ms)
+✔ run_begin conditional: protected-line pair must be both-null or both-set (0.043292ms)
+✔ run_close data conditional: audit_complete close binds the report (0.087292ms)
+✔ completion_evaluate data conditional: labels bind status and report shape (0.363416ms)
+✔ old_line_verify data conditional: pre_change forbids route/receipt bindings (0.200834ms)
+✔ xui_inventory data conditional: case projection is enforced (0.118958ms)
+✔ the tooling exclusion is exactly the acceptance harness (2.215541ms)
+✔ production import registry is closed: builtins, ajv, and relative modules only (1.726667ms)
+✔ no shell, spawn, eval, dynamic import, or network surface in production code (2.495125ms)
+✔ no plaintext secret, private-key container, or credential material in durable bytes (6.543916ms)
+✔ no real deployment value: public IPs, real-looking hostnames, or home paths (2.368541ms)
+✔ no active Future-v2 entry point in production or config bytes (5.076542ms)
+✔ dependency set is exactly ajv (0.396125ms)
+✔ mutating adapter operations are exactly the contract's closed set (11.70075ms)
+ℹ tests 310
 ℹ suites 0
-ℹ pass 196
+ℹ pass 310
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1864.902542
+ℹ duration_ms 3806.577625
 
 --- [4] contract parity verify (re-extraction byte-compare) ---
 {
@@ -269,12 +516,20 @@ OK
     {
       "name": "active-set",
       "ok": true,
-      "detail": "version 0.1.0-phase1 with layout receipt"
-    },
-    {
-      "name": "ledger-wal",
-      "ok": true,
-      "detail": "ledger opens in WAL journal mode"
+      "detail": "no ActiveSet installed in this runtime root (nothing to check)"
     }
   ]
 }
+
+--- [6] frozen package unchanged after the run ---
+00-verified-host-facts.md: OK
+01-plugin-development-plan.md: OK
+02-mcp-tool-plan.md: OK
+03-hooks-privacy-surge-plan.md: OK
+04-development-readiness-review.md: OK
+05-development-start-checklist.md: OK
+README.md: OK
+validation/spec-invariants.cjs: OK
+
+--- summary ---
+all acceptance steps exited 0

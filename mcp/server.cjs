@@ -11,17 +11,22 @@ const { resolveRuntimeRoot } = require("../runtime/root.cjs");
 const { Ledger } = require("./ledger/ledger.cjs");
 const { AdapterRegistry, buildProductionAdapters } = require("./adapters/registry.cjs");
 const { PhaseGatedKeychain } = require("./secrets/keychain.cjs");
+const { LowEntropyBinder } = require("./core/hmac.cjs");
 const { ServerCore } = require("./core/server-core.cjs");
 const { startStdioTransport } = require("./core/jsonrpc.cjs");
 
-function buildContext({ dataDir, adapters, keychain, now } = {}) {
+function buildContext({ dataDir, adapters, keychain, binder, now } = {}) {
+  const resolvedDataDir = dataDir || resolveRuntimeRoot().dataDir;
   return {
     ledger: new Ledger({
-      dataDir: dataDir || resolveRuntimeRoot().dataDir,
+      dataDir: resolvedDataDir,
       now: now || (() => Date.now()),
     }),
     adapters: adapters || new AdapterRegistry(buildProductionAdapters()),
     keychain: keychain || new PhaseGatedKeychain(),
+    // Per-install random HMAC key for the low-entropy comparison domains.
+    // Lives only under the controlled runtime root and never enters MCP.
+    binder: binder || new LowEntropyBinder({ dataDir: resolvedDataDir }),
   };
 }
 

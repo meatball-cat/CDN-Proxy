@@ -123,8 +123,7 @@ test("configure minimal closed loop: plan -> lease -> cursor -> owned mutation",
   assert.deepEqual(replay.data, inbound.data);
   assert.equal(fx.adapters.externalMutationCallCount(), mutationBefore + 1);
 
-  // Next step (node03 xui_profile_publish) has no fake adapter: it must fail
-  // closed pre-dispatch with no cursor advance and no phase change.
+  // Next step (node03 xui_profile_publish) executes and advances the cursor.
   const status3 = fx.callTool("run_status", { run_id: runId });
   const publish = fx.callTool("xui_profile_publish", {
     run_id: runId,
@@ -134,11 +133,46 @@ test("configure minimal closed loop: plan -> lease -> cursor -> owned mutation",
     expected_ledger_digest: status3.data.ledger_digest,
     idempotency_key: "cfg-publish-000001",
   });
+  assert.equal(publish.status, "ok", JSON.stringify(publish.error));
+  assert.equal(publish.data.artifact_mode, "0600");
+  const after = fx.callTool("run_status", { run_id: runId });
+  assert.equal(after.data.main_phase, "APPLYING");
+  assert.equal(after.data.pending_operation_refs.length, 10);
+});
+
+test("an unavailable downstream adapter fails closed with no cursor advance", (t) => {
+  // Same journey, but the profile-publish broker operation is absent. The
+  // step must abort before any observable effect and leave the cursor,
+  // phase, and mutation count exactly where they were.
+  const fx = makeFixture({ removeBrokerOperations: ["xui.profile_publish_derive_store.v1"] });
+  t.after(() => fx.cleanup());
+  const runId = beginConfigure(fx);
+  inventoriesAndBaseline(fx, runId);
+  const { plan, approval } = compileAndAuthorize(fx, runId);
+  fx.callTool("old_line_verify", {
+    run_id: runId, probe_destination_ref: fx.refs.probe_destination_ref,
+    idempotency_key: "unavail-old-line-01",
+  });
+  fx.callTool("xui_create_inbound", {
+    run_id: runId, plan_ref: plan.plan_ref, operation_ref: plan.operation_refs[1],
+    approval_ref: approval.approval_ref,
+    expected_ledger_digest: fx.callTool("run_status", { run_id: runId }).data.ledger_digest,
+    idempotency_key: "unavail-inbound-001",
+  });
+  const before = fx.callTool("run_status", { run_id: runId });
+  const mutationsBefore = fx.adapters.externalMutationCallCount();
+  const publish = fx.callTool("xui_profile_publish", {
+    run_id: runId, plan_ref: plan.plan_ref, operation_ref: plan.operation_refs[2],
+    approval_ref: approval.approval_ref,
+    expected_ledger_digest: before.data.ledger_digest,
+    idempotency_key: "unavail-publish-001",
+  });
   assert.equal(publish.status, "error");
   assert.equal(publish.error.code, "UPSTREAM_UNAVAILABLE");
   const after = fx.callTool("run_status", { run_id: runId });
-  assert.equal(after.data.main_phase, "APPLYING");
-  assert.equal(after.data.pending_operation_refs.length, 11);
+  assert.equal(after.data.main_phase, before.data.main_phase);
+  assert.equal(after.data.pending_operation_refs.length, before.data.pending_operation_refs.length);
+  assert.equal(fx.adapters.externalMutationCallCount(), mutationsBefore);
 });
 
 test("challenge replay and impact-digest drift are rejected", (t) => {
@@ -257,19 +291,37 @@ test("BBR branch minimal loop: pending -> inventoried -> closed receipt gates ma
   assert.equal(fx.adapters.externalMutationCallCount(), 0);
 });
 
-test("configure completion stays honestly pending in this build", (t) => {
+test("configure completion is barred before the BBR branch closes, then honestly pending", (t) => {
   const fx = makeFixture();
   t.after(() => fx.cleanup());
   const runId = beginConfigure(fx);
   inventoriesAndBaseline(fx, runId);
-  const status = fx.callTool("run_status", { run_id: runId });
+
+  // The configure-only BBR barrier makes completion illegal, not pending.
+  const barred = fx.callTool("completion_evaluate", {
+    run_id: runId,
+    expected_ledger_digest: fx.callTool("run_status", { run_id: runId }).data.ledger_digest,
+    idempotency_key: "cfg-completion-0000",
+  });
+  assert.equal(barred.status, "error");
+  assert.equal(barred.error.code, "WRONG_STATE");
+
+  fx.callTool("run_close", {
+    run_id: runId, scope: "bbr", outcome: "not_requested",
+    expected_ledger_digest: fx.callTool("run_status", { run_id: runId }).data.ledger_digest,
+    idempotency_key: "cfg-bbr-close-0001",
+  });
+
+  // With the branch closed but no verification evidence, the honest label is
+  // configured_not_verified with nothing sealed.
   const completion = fx.callTool("completion_evaluate", {
     run_id: runId,
-    expected_ledger_digest: status.data.ledger_digest,
+    expected_ledger_digest: fx.callTool("run_status", { run_id: runId }).data.ledger_digest,
     idempotency_key: "cfg-completion-0001",
   });
   assert.equal(completion.status, "pending");
   assert.equal(completion.data.label, "configured_not_verified");
   assert.equal(completion.data.all_required_true, false);
   assert.equal(completion.data.report_ref, null);
+  assert.ok(completion.data.satisfied_requirement_ids.length <= 6);
 });

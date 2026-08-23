@@ -53,6 +53,9 @@ class AdapterRegistry {
     }
     this.adapters = adapters;
     this.mutationCalls = [];
+    // Every external invocation, mutating or not, so a test can prove no
+    // adapter was reached outside a durable, plan-bound intent.
+    this.externalCalls = [];
   }
 
   callHelper(operationName, callerTool, payload) {
@@ -64,6 +67,7 @@ class AdapterRegistry {
       throw new ToolError("INTERNAL_ERROR",
         `tool ${callerTool} is not a registered caller of ${operationName}`);
     }
+    this.externalCalls.push({ kind: "helper", operationName, callerTool, mutating: spec.mutating });
     if (spec.mutating) {
       this.mutationCalls.push({ kind: "helper", operationName, callerTool });
     }
@@ -81,6 +85,7 @@ class AdapterRegistry {
       throw new ToolError("INTERNAL_ERROR",
         `tool ${callerTool} is not a registered caller of ${operationName}`);
     }
+    this.externalCalls.push({ kind: "broker", operationName, callerTool, mutating: false });
     const impl = this.adapters.broker[operationName];
     if (!impl) return phaseGatedStub("broker", operationName)();
     return impl(payload);

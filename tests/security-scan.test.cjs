@@ -10,7 +10,9 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const ROOT = path.resolve(__dirname, "..");
+const {
+  ROOT, SCANNER_FILES, TOOLING_SOURCE, isScannerFile, isToolingFile,
+} = require("./helpers/scanner-scope.cjs");
 const SKIP_DIRS = new Set(["node_modules", ".git"]);
 
 function walk(dir, out = []) {
@@ -24,16 +26,34 @@ function walk(dir, out = []) {
 }
 
 const ALL_FILES = walk(ROOT);
+
+// Product code: everything that ships and executes as part of the server or
+// its lifecycle. The acceptance harness is developer tooling that drives the
+// product from outside, so it is scoped separately - and the tooling set is
+// pinned to one known file so nothing can hide there.
 const PRODUCTION_SOURCE = ALL_FILES.filter((file) => {
   const relative = path.relative(ROOT, file);
   return relative.endsWith(".cjs") &&
     !relative.startsWith("tests" + path.sep) &&
-    !relative.startsWith("contract" + path.sep);
+    !relative.startsWith("contract" + path.sep) &&
+    !isToolingFile(file);
+});
+
+test("the tooling exclusion is exactly the acceptance harness", () => {
+  assert.deepEqual([...TOOLING_SOURCE], ["scripts/acceptance.cjs"]);
+  assert.ok(fs.existsSync(path.join(ROOT, "scripts", "acceptance.cjs")));
+  // The harness is never reachable from the product: no product module
+  // requires it, so it cannot pull a shell surface back into the runtime.
+  for (const file of PRODUCTION_SOURCE) {
+    assert.ok(!/require\([^)]*acceptance[^)]*\)/.test(fs.readFileSync(file, "utf8")),
+      `${path.relative(ROOT, file)} must not require the acceptance harness`);
+  }
 });
 const DURABLE_TEXT = ALL_FILES.filter((file) =>
   /\.(cjs|json|md|txt)$/.test(file) && !file.includes("package-lock.json") &&
-  // The scanner itself names the forbidden patterns it hunts for.
-  path.resolve(file) !== __filename);
+  // A scanner necessarily names the forbidden patterns it hunts for; the two
+  // scanner files are the only self-referential exclusions.
+  !isScannerFile(file));
 
 // Closed production import registry: node builtins actually used, ajv, and
 // in-repo relative modules. Anything else fails the scan.

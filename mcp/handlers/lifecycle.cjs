@@ -7,6 +7,24 @@ const {
   requireRun, auditGate, stateGate, checkExpectedLedgerDigest,
   withIdempotency,
 } = require("./common.cjs");
+const identityBinding = require("../core/identity.cjs");
+
+const E2E_POLICY = contracts.AUTHENTICATED_E2E_POLICY;
+
+// Each authenticated-E2E requirement maps to the exact evidence family that
+// proves it. A requirement with no fresh evidence is simply not satisfied;
+// there is no partial credit and no substitute signal.
+const E2E_REQUIREMENT_FAMILY = Object.freeze({
+  DIRECT_ORIGIN_TLS_WEBSOCKET: "DIRECT_ORIGIN_TLS_WEBSOCKET",
+  CLOUDFLARE_TLS_WEBSOCKET: "CLOUDFLARE_TLS_WEBSOCKET",
+  CLIENT_FIELD_BINDING_EQUALITY: "CLIENT_FIELD_BINDING_EQUALITY",
+  AUTHENTICATED_PROXY_REQUEST: "AUTHENTICATED_PROXY_REQUEST",
+  EXPECTED_PUBLIC_EGRESS: "EXPECTED_PUBLIC_EGRESS",
+  NGINX_XRAY_LOG_CORRELATION: "LOG_CORRELATION",
+  PROTECTED_PRIOR_LINE_HEALTHY_OR_PROVEN_NA: "PROTECTED_LINE_HEALTH",
+});
+
+const BBR_CLOSED_RECEIPTS = contracts.BBR_SAFETY_POLICY.mainCompletionResolvedSet;
 
 const ONBOARDING_ROLE_BY_FIELD = Object.freeze({
   origin_target_ref: { kind: "target", role: "origin" },
@@ -56,6 +74,15 @@ function run_begin(ctx, input) {
           "protected_line_ref may be null only when the server registered the protected line as not applicable");
       }
     }
+    // Dedicated node hostname: never the zone apex, never the panel or
+    // management hostname, never ambiguous, and always under the registered
+    // zone. Checked here so no run can even begin on a bad identity.
+    identityBinding.requireDedicatedNodeHostname(ctx, {
+      binding: {
+        node_hostname_ref: input.node_hostname_ref,
+        cloudflare_target_ref: input.cloudflare_target_ref,
+      },
+    });
 
     const runId = mintRef("run");
     const bbrPhase = input.mode === "configure" && input.enable_bbr
@@ -205,29 +232,127 @@ function completion_evaluate(ctx, input) {
         },
       };
     }
-    // Configure runs in the Phase 0-1 build cannot reach end_to_end_verified:
-    // the verification adapters are phase-gated. The honest fresh label is
-    // configured_not_verified, which the contract binds to status=pending.
+    return evaluateConfigureCompletion(ctx, run);
+  });
+}
+
+// Authenticated end-to-end evaluation.
+//
+// Latency, an open port, a certificate, a TLS handshake, an HTTP 101, and a
+// well-formed static profile are all explicitly insufficient. The label only
+// becomes end_to_end_verified when every required evidence family is fresh,
+// the whole public hostname identity agrees across certificate SAN, record,
+// nginx server_name and client address/SNI/Host, and the configure run's BBR
+// branch has already closed into one of the four allowed receipts.
+function evaluateConfigureCompletion(ctx, run) {
+  // The configure-only BBR barrier: an unresolved BBR branch makes completion
+  // illegal, not pending. Audit runs are explicitly exempt and never get here.
+  const bbrClosure = ctx.ledger.getClosure(run.run_id, "bbr");
+  const bbrReceipt = ctx.ledger.getScalar(run.run_id, "bbr_closed_receipt");
+  const bbrResolved = run.bbr_phase === "BBR_CLOSED" && bbrClosure !== null &&
+    BBR_CLOSED_RECEIPTS.includes(bbrReceipt || "");
+  if (!bbrResolved) {
+    throw new ToolError("WRONG_STATE",
+      `configure completion requires the BBR branch to be closed into one of ${BBR_CLOSED_RECEIPTS.length} allowed receipts first (bbr_phase ${run.bbr_phase})`);
+  }
+
+  // Domain identity set-equality is what CLIENT_FIELD_BINDING_EQUALITY means:
+  // the requirement is satisfied only when the certificate SAN, the record,
+  // the nginx server_name and the client address/SNI/Host all name the one
+  // registered hostname.
+  let identityComplete = true;
+  let identityDetail = null;
+  try {
+    identityBinding.assertSetEquality(ctx, run);
+  } catch (error) {
+    identityComplete = false;
+    identityDetail = error.message;
+  }
+
+  const missing = [];
+  const satisfied = [];
+  for (const requirementId of E2E_POLICY.requiredEvidence) {
+    const family = E2E_REQUIREMENT_FAMILY[requirementId];
+    const evidenceFresh = Boolean(family && ctx.ledger.freshEvidence(run.run_id, family));
+    const proven = requirementId === "CLIENT_FIELD_BINDING_EQUALITY"
+      ? evidenceFresh && identityComplete
+      : evidenceFresh;
+    if (proven) satisfied.push(requirementId);
+    else missing.push(requirementId);
+  }
+
+  if (missing.length === 0) {
+    const reportRef = mintRef("artifact");
+    const reportDigest = digestOf({
+      runId: run.run_id, label: "end_to_end_verified", satisfied,
+      identity: ctx.ledger.identityBindings(run.run_id),
+      bbrClosureDigest: bbrClosure.closure_digest,
+    });
+    // A sealed delivery always discloses what it leaves behind: the published
+    // client profile copy, any remote issuance metadata, and a retained
+    // accepted BBR change.
+    const retained = ctx.ledger.residualsByRun(run.run_id);
     const residualRef = ctx.ledger.putEvidence({
       runId: run.run_id,
       evidenceType: "RESIDUAL_DISCLOSURE",
       ttl: "NO_TTL",
-      maskedSummary: "configure run not verified: verification adapters are phase-gated in this build",
-      payload: { label: "configured_not_verified" },
-    });
-    ctx.ledger.appendEvent(run.run_id, "COMPLETION_PENDING", { label: "configured_not_verified" });
-    return {
-      status: "pending",
-      data: {
-        report_ref: null,
-        report_digest: null,
-        label: "configured_not_verified",
-        satisfied_requirement_ids: [],
-        all_required_true: false,
-        residual_disclosure_ref: residualRef,
+      maskedSummary: `sealed delivery residuals: ${retained.length} item(s); bbr ${bbrReceipt}`.slice(0, 128),
+      payload: {
+        label: "end_to_end_verified",
+        residualKinds: retained.map((row) => row.kind),
+        bbrClosedReceipt: bbrReceipt,
       },
-    };
+    });
+    return ctx.ledger.transaction(() => {
+      ctx.ledger.insertReport({
+        reportRef, runId: run.run_id, label: "end_to_end_verified", reportDigest,
+      });
+      ctx.ledger.appendEvent(run.run_id, "COMPLETION_REPORT_SEALED", {
+        label: "end_to_end_verified", reportRef,
+        insufficientSignalsRejected: E2E_POLICY.insufficientSignals,
+      });
+      ctx.ledger.setPhases(run.run_id, { mainPhase: "DELIVERY_REPORT_SEALED" });
+      return {
+        status: "ok",
+        data: {
+          report_ref: reportRef,
+          report_digest: reportDigest,
+          label: "end_to_end_verified",
+          satisfied_requirement_ids: satisfied,
+          all_required_true: true,
+          residual_disclosure_ref: residualRef,
+        },
+      };
+    });
+  }
+
+  // Honest pending: name exactly what is not proven, seal nothing, and leave
+  // the destination unchanged.
+  const reasons = [
+    ...missing.map((id) => `missing:${id}`),
+    ...(identityComplete ? [] : ["identity_set_equality_incomplete"]),
+  ];
+  const residualRef = ctx.ledger.putEvidence({
+    runId: run.run_id,
+    evidenceType: "RESIDUAL_DISCLOSURE",
+    ttl: "NO_TTL",
+    maskedSummary: `configure run not verified: ${reasons.join(", ")}`.slice(0, 128),
+    payload: { label: "configured_not_verified", reasons, identityDetail },
   });
+  ctx.ledger.appendEvent(run.run_id, "COMPLETION_PENDING", {
+    label: "configured_not_verified", reasons,
+  });
+  return {
+    status: "pending",
+    data: {
+      report_ref: null,
+      report_digest: null,
+      label: "configured_not_verified",
+      satisfied_requirement_ids: satisfied,
+      all_required_true: false,
+      residual_disclosure_ref: residualRef,
+    },
+  };
 }
 
 const MAIN_CLOSE_ALLOWED = Object.freeze(
@@ -270,34 +395,61 @@ function closeMain(ctx, run, input) {
     boundLabel = "audit_complete";
     boundReportDigest = report.report_digest;
   } else {
-    if (input.outcome === "accepted") {
-      // Main accepted closure needs the sealed end-to-end report plus the
-      // authenticated E2E gate, which no Phase 0-1 run can satisfy.
-      throw new ToolError("WRONG_STATE",
-        "main accepted close requires a sealed end_to_end_verified report; not reachable in this build");
-    }
     if (input.outcome === "audit_complete" || input.outcome === "not_requested") {
       throw new ToolError("WRONG_STATE",
         `outcome ${input.outcome} is not legal for a configure main close`);
     }
-    if (run.bbr_phase !== "BBR_CLOSED" && run.bbr_phase !== "BBR_NOT_REQUESTED") {
-      // Configure-only barrier: every requested BBR branch must close first.
-      if (run.enable_bbr) {
-        throw new ToolError("WRONG_STATE",
-          "configure main close requires the BBR branch to be closed first");
-      }
-    }
-    if (run.bbr_phase === "BBR_NOT_REQUESTED") {
+    // Configure-only barrier: every BBR branch, requested or not, closes into
+    // exactly one of the four allowed receipts before the main line closes.
+    if (run.bbr_phase !== "BBR_CLOSED") {
       throw new ToolError("WRONG_STATE",
-        "configure main close requires an explicit BBR closed receipt (run_close scope=bbr) first");
+        `configure main close requires an explicit BBR closed receipt first (bbr_phase ${run.bbr_phase})`);
     }
-    residualRef = ctx.ledger.putEvidence({
-      runId: run.run_id,
-      evidenceType: "RESIDUAL_DISCLOSURE",
-      ttl: "NO_TTL",
-      maskedSummary: `main ${input.outcome} close residual disclosure`,
-      payload: { outcome: input.outcome, ownedChanges: ctx.ledger.ownershipByRun(run.run_id).length },
-    });
+    if (input.outcome === "accepted") {
+      const report = ctx.ledger.latestReport(run.run_id, "end_to_end_verified");
+      if (!report || run.main_phase !== "DELIVERY_REPORT_SEALED") {
+        throw new ToolError("WRONG_STATE",
+          "main accepted close requires the sealed end_to_end_verified completion report");
+      }
+      if (ctx.ledger.currentRecoveryObligation(run.run_id, "main") ||
+          ctx.ledger.openReconciliationObligation(run.run_id)) {
+        throw new ToolError("WRONG_STATE",
+          "main accepted close requires no open recovery or reconciliation obligation");
+      }
+      boundLabel = "end_to_end_verified";
+      boundReportDigest = report.report_digest;
+      const retained = ctx.ledger.residualsByRun(run.run_id);
+      residualRef = ctx.ledger.putEvidence({
+        runId: run.run_id,
+        evidenceType: "RESIDUAL_DISCLOSURE",
+        ttl: "NO_TTL",
+        maskedSummary: `accepted close residuals: ${retained.length} item(s)`.slice(0, 128),
+        payload: {
+          outcome: "accepted",
+          residualKinds: retained.map((row) => row.kind),
+          retainedAcceptedBbr: ctx.ledger.getScalar(run.run_id, "bbr_closed_receipt") ===
+            "BBR_CLOSED_VERIFIED_RECEIPT",
+        },
+      });
+    } else {
+      // partial / abandoned: disclose what this run leaves behind, including
+      // anything a rollback could not erase and any retained accepted BBR.
+      const residuals = ctx.ledger.residualsByRun(run.run_id);
+      const retainedBbr = ctx.ledger.getScalar(run.run_id, "bbr_closed_receipt") ===
+        "BBR_CLOSED_VERIFIED_RECEIPT";
+      residualRef = ctx.ledger.putEvidence({
+        runId: run.run_id,
+        evidenceType: "RESIDUAL_DISCLOSURE",
+        ttl: "NO_TTL",
+        maskedSummary: `main ${input.outcome} close: ${residuals.length} residual(s)${retainedBbr ? ", accepted BBR retained" : ""}`.slice(0, 128),
+        payload: {
+          outcome: input.outcome,
+          ownedChanges: ctx.ledger.ownershipByRun(run.run_id).length,
+          residualKinds: residuals.map((row) => row.kind),
+          retainedAcceptedBbr: retainedBbr,
+        },
+      });
+    }
   }
 
   const closureRef = mintRef("closure");
@@ -367,11 +519,46 @@ function closeBbr(ctx, run, input) {
       maskedSummary: "BBR branch closed with no BBR apply receipt",
       payload: { bbrPhase: run.bbr_phase },
     });
+  } else if (run.bbr_phase === "BBR_VERIFIED") {
+    if (input.outcome !== "accepted") {
+      throw new ToolError("WRONG_STATE", "a verified BBR branch closes only as accepted");
+    }
+    requirePostBbrRefresh(ctx, run);
+    outcomeReceipt = "BBR_CLOSED_VERIFIED_RECEIPT";
+  } else if (run.bbr_phase === "BBR_ROLLED_BACK") {
+    if (input.outcome !== "partial") {
+      throw new ToolError("WRONG_STATE", "a rolled-back BBR branch closes only as partial");
+    }
+    requirePostBbrRefresh(ctx, run);
+    outcomeReceipt = "BBR_CLOSED_ROLLED_BACK_RECEIPT";
+    residualRef = ctx.ledger.putEvidence({
+      runId: run.run_id,
+      evidenceType: "RESIDUAL_DISCLOSURE",
+      ttl: "NO_TTL",
+      maskedSummary: "BBR branch applied and then reversed to the recorded prior values",
+      payload: { bbrPhase: run.bbr_phase },
+    });
+  } else if (run.bbr_phase === "BBR_MANUAL_ACTION_REQUIRED") {
+    // A manual BBR branch may only close no-write, and only once the server
+    // has proven that no BBR apply receipt exists.
+    if (input.outcome !== "partial") {
+      throw new ToolError("WRONG_STATE", "a manual BBR branch closes only as partial");
+    }
+    if (ctx.ledger.getScalar(run.run_id, "bbr_apply_receipt_ref")) {
+      throw new ToolError("WRONG_STATE",
+        "a BBR apply receipt exists; this branch cannot close as no-write");
+    }
+    outcomeReceipt = "BBR_CLOSED_NO_WRITE_RECEIPT";
+    residualRef = ctx.ledger.putEvidence({
+      runId: run.run_id,
+      evidenceType: "RESIDUAL_DISCLOSURE",
+      ttl: "NO_TTL",
+      maskedSummary: "BBR branch closed from a manual state with no BBR apply receipt",
+      payload: { bbrPhase: run.bbr_phase },
+    });
   } else {
-    // BBR_VERIFIED / BBR_ROLLED_BACK / BBR_MANUAL_ACTION_REQUIRED closures
-    // require Phase 4 receipts that this build cannot produce.
     throw new ToolError("WRONG_STATE",
-      `run_close(bbr) from ${run.bbr_phase} requires Phase 4 receipts not present in this build`);
+      `run_close(bbr) is not legal from bbr_phase ${run.bbr_phase}`);
   }
   const closureRef = mintRef("closure");
   return ctx.ledger.transaction(() => {
@@ -385,6 +572,7 @@ function closeBbr(ctx, run, input) {
       runId: run.run_id, scope: "bbr", outcome: input.outcome, receipt: outcomeReceipt,
     });
     ctx.ledger.setPhases(run.run_id, { bbrPhase: "BBR_CLOSED" });
+    ctx.ledger.setScalar(run.run_id, "bbr_closed_receipt", outcomeReceipt);
     const receiptRef = mintRef("receipt");
     ctx.ledger.insertOwnership({
       receiptRef,
@@ -422,23 +610,27 @@ function closeBbr(ctx, run, input) {
   });
 }
 
-function reconcile_status(ctx, input) {
-  const run = requireRun(ctx, input.run_id);
-  auditGate(run, "reconcile_status");
-  stateGate("reconcile_status", run);
-  const obligation = ctx.ledger.openReconciliationObligation(run.run_id);
-  if (!obligation) {
-    throw new ToolError("WRONG_STATE",
-      "reconcile_status requires exactly one open reconciliation obligation");
+// After any BBR apply, the authenticated traffic, egress, log-correlation and
+// protected-line evidence it invalidated must all be freshly re-proven before
+// the branch can close.
+function requirePostBbrRefresh(ctx, run) {
+  const required = contracts.BBR_SAFETY_POLICY.mainCompletionResolvedSet && [
+    ["AUTHENTICATED_PROXY_REQUEST", "authenticated proxy request"],
+    ["EXPECTED_PUBLIC_EGRESS", "expected public egress"],
+    ["LOG_CORRELATION", "nginx/Xray log correlation"],
+    ["PROTECTED_LINE_HEALTH", "protected prior line health"],
+  ];
+  const stale = required
+    .filter(([family]) => !ctx.ledger.freshEvidence(run.run_id, family))
+    .map(([, label]) => label);
+  if (stale.length > 0) {
+    throw new ToolError("EVIDENCE_STALE",
+      `the BBR branch cannot close until these are re-proven after the BBR change: ${stale.join(", ")}`.slice(0, 220),
+      { retryable: true });
   }
-  // Phase 0-1 cannot create reconciliation obligations (no external mutation
-  // commits), so resolving one is unreachable; the fixed observers are Phase
-  // 2+ adapters and are phase-gated here.
-  throw new ToolError("UPSTREAM_UNAVAILABLE",
-    "reconciliation observers are phase-gated: no external adapter is active in this build",
-    { retryable: false });
 }
 
 module.exports = {
-  run_begin, run_status, evidence_list, completion_evaluate, run_close, reconcile_status,
+  run_begin, run_status, evidence_list, completion_evaluate, run_close,
+  evaluateConfigureCompletion, requirePostBbrRefresh,
 };
