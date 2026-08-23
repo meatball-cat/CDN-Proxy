@@ -15,10 +15,19 @@ and it never substitutes for the host-mediated approval prompt.
   is the sole authority for Tool names, order, schemas, states, and policy.
   This build vendors that contract verbatim under `contract/` and the server
   serves it unchanged.
-- Current build state: Phase 0-1. The ledger, schemas, and audit journey are
-  implemented; every external mutation adapter is phase-gated and inactive.
-  Do not claim the plugin is INSTALLABLE, RUNNABLE against real
-  infrastructure, or ACCEPTED.
+- Current build state: Phase 0-4 source build. The contract, ledger, audit
+  journey, clean-host install, broker credential flow, the node journey with
+  authenticated end-to-end verification, and the optional BBR branch with both
+  rollback graphs exist in source and are exercised only against hermetic fake
+  adapters in temporary data directories.
+- A passing source suite is not a real run. Every production adapter (SSH,
+  Cloudflare, 3x-ui, Nginx, Keychain broker) remains phase-gated and fails
+  closed before dispatch, so this build reads and mutates no real origin,
+  Cloudflare zone, DNS record, certificate, sysctl drop-in, or Keychain item.
+- Status therefore stays `INSTALLABLE: NOT_CLAIMED`, `RUNNABLE` against real
+  infrastructure `NOT_CLAIMED`, and `ACCEPTED: NOT_CLAIMED`. Never report a
+  fake-adapter test result as evidence about real infrastructure, and never
+  claim the plugin is installable, runnable, or accepted.
 
 ## Run modes
 

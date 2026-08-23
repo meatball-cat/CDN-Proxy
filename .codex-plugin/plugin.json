@@ -1,8 +1,8 @@
 {
   "name": "cdn-node-operator",
-  "version": "0.1.0-phase1",
+  "version": "0.2.0-phase4",
   "displayName": "3x-ui CDN Operator (Core v1)",
-  "description": "Bounded operator for auditing or configuring one registered Linux origin as one Cloudflare-fronted 3x-ui/Xray WebSocket node. One local stdio MCP server (cdn-node), closed 31-Tool catalog frozen by the Core-v1 contract. Phase 0-1 build: contract, ledger, and audit journey only; no external mutation adapter is active.",
+  "description": "Bounded operator for auditing or configuring one registered Linux origin as one Cloudflare-fronted 3x-ui/Xray WebSocket node. One local stdio MCP server (cdn-node), closed 31-Tool catalog frozen by the Core-v1 contract. Phase 0-4 source build: contract, ledger, audit journey, clean-host install, broker credential flow, node journey with authenticated end-to-end verification, and the optional BBR branch exist in source and are exercised only against hermetic fake adapters in temporary data directories. Every production adapter stays phase-gated and fails closed before dispatch, so this build is not INSTALLABLE, not RUNNABLE against real infrastructure, and not ACCEPTED.",
   "engines": {
     "codex": "*",
     "node": ">=24.0.0"
@@ -28,7 +28,7 @@
     "uninstall": "../lifecycle/uninstall.cjs"
   },
   "status": {
-    "phase": "PHASE_0_1_ONLY",
+    "phase": "PHASE_0_4_ONLY",
     "installable": "NOT_CLAIMED",
     "runnable": "NOT_CLAIMED",
     "accepted": "NOT_CLAIMED"
