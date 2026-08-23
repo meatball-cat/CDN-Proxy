@@ -12,6 +12,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { resolveRuntimeRoot } = require("../runtime/root.cjs");
 const { sha256Digest } = require("../mcp/core/refs.cjs");
+const {
+  CORE_HOOK_POLICY_VERSION,
+  HOOK_TRUST_FILES,
+} = require("../hooks/catalog.cjs");
 
 const PRODUCT_VERSION = require("../package.json").version;
 
@@ -21,12 +25,7 @@ function installRootOfThisBuild() {
 
 function layoutReceipt(version) {
   const installRoot = installRootOfThisBuild();
-  const covered = [
-    "contract/PROVENANCE.json",
-    "contract/shared/schema-primitives.cjs",
-    "contract/mcp/schemas/contracts.cjs",
-    ".mcp.json",
-  ];
+  const covered = HOOK_TRUST_FILES;
   return {
     version,
     nodeMajor: Number(process.versions.node.split(".")[0]),
@@ -47,6 +46,21 @@ function writeActiveSetAtomic(paths, activeSet) {
   const temp = `${paths.activeSetPath}.tmp-${process.pid}`;
   fs.writeFileSync(temp, JSON.stringify(activeSet, null, 2) + "\n", { mode: 0o600 });
   fs.renameSync(temp, paths.activeSetPath);
+}
+
+function activeSetFor(paths, version, previous, receipt, extra = {}) {
+  return {
+    version,
+    previous,
+    installRoot: installRootOfThisBuild(),
+    runtimeRoot: fs.realpathSync(paths.root),
+    nodeExecutable: fs.realpathSync(process.execPath),
+    ownerUid: typeof process.getuid === "function" ? process.getuid() : null,
+    policyVersion: CORE_HOOK_POLICY_VERSION,
+    receiptDigest: sha256Digest(JSON.stringify(receipt)),
+    promotedAt: new Date().toISOString(),
+    ...extra,
+  };
 }
 
 function cleanStagingResidue(paths) {
@@ -95,13 +109,7 @@ function install({ env = process.env, version = PRODUCT_VERSION } = {}) {
     );
   }
   const receipt = stageVersion(paths, version);
-  writeActiveSetAtomic(paths, {
-    version,
-    previous: null,
-    installRoot: installRootOfThisBuild(),
-    receiptDigest: sha256Digest(JSON.stringify(receipt)),
-    promotedAt: new Date().toISOString(),
-  });
+  writeActiveSetAtomic(paths, activeSetFor(paths, version, null, receipt));
   return { paths, receipt };
 }
 
@@ -114,13 +122,7 @@ function update({ env = process.env, version } = {}) {
     throw new Error("update requires a new distinct version identifier");
   }
   const receipt = stageVersion(paths, version);
-  writeActiveSetAtomic(paths, {
-    version,
-    previous: existing.version,
-    installRoot: installRootOfThisBuild(),
-    receiptDigest: sha256Digest(JSON.stringify(receipt)),
-    promotedAt: new Date().toISOString(),
-  });
+  writeActiveSetAtomic(paths, activeSetFor(paths, version, existing.version, receipt));
   return { paths, receipt };
 }
 
@@ -136,14 +138,13 @@ function rollback({ env = process.env } = {}) {
     throw new Error(`previous version ${existing.previous} receipt is missing; manual recovery required`);
   }
   const receipt = JSON.parse(fs.readFileSync(previousReceiptPath, "utf8"));
-  writeActiveSetAtomic(paths, {
-    version: existing.previous,
-    previous: null,
-    installRoot: installRootOfThisBuild(),
-    receiptDigest: sha256Digest(JSON.stringify(receipt)),
-    promotedAt: new Date().toISOString(),
-    rolledBackFrom: existing.version,
-  });
+  writeActiveSetAtomic(paths, activeSetFor(
+    paths,
+    existing.previous,
+    null,
+    receipt,
+    { rolledBackFrom: existing.version },
+  ));
   return { paths, receipt };
 }
 
